@@ -99,28 +99,25 @@
 
         .mtg-card-frame {
             border-radius: 10px;
-            background: #1a1a24;
-            border: 1px solid rgba(255,255,255,0.08);
+            background: #c8bfa8;
+            border: 1px solid rgba(0,0,0,0.12);
             overflow: hidden;
         }
 
-        /* Color-based card borders */
-        .mtg-card[data-color="white"] .mtg-card-inner { background: linear-gradient(135deg, #f9faf4, #e8e4d0, #f5f0dc); }
-        .mtg-card[data-color="blue"] .mtg-card-inner { background: linear-gradient(135deg, #0e4a8a, #1a6bc4, #0d3f75); }
-        .mtg-card[data-color="black"] .mtg-card-inner { background: linear-gradient(135deg, #2a2a2a, #444, #1e1e1e); }
-        .mtg-card[data-color="red"] .mtg-card-inner { background: linear-gradient(135deg, #9e2a1a, #c4451e, #7a1f12); }
-        .mtg-card[data-color="green"] .mtg-card-inner { background: linear-gradient(135deg, #1a5c2a, #2a8c3e, #145222); }
-        .mtg-card[data-color="multi"] .mtg-card-inner { background: linear-gradient(135deg, #c9a43c, #e8c84a, #a8882e); }
-        .mtg-card[data-color="colorless"] .mtg-card-inner { background: linear-gradient(135deg, #8a8a8a, #b0b0b0, #707070); }
+        /* Uniform card frame — warm parchment */
+        .mtg-card-inner {
+            background: linear-gradient(135deg, #e8dfc8, #d8ccb0, #e4d9c2);
+        }
 
         /* Card header: name + mana */
         .card-header-row {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 8px 10px 6px; background: rgba(0,0,0,0.15);
+            padding: 8px 10px 6px; background: rgba(255,255,255,0.45);
             border-radius: 6px 6px 0 0; min-height: 36px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
         }
         .card-name {
-            font-size: 0.85rem; font-weight: 700; color: #111;
+            font-size: 0.85rem; font-weight: 700; color: #1a1a1a;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
             flex: 1; margin-right: 8px;
         }
@@ -169,7 +166,7 @@
         /* Type line */
         .card-type-line {
             padding: 5px 10px; font-size: 0.72rem; font-weight: 600;
-            color: #222; background: rgba(0,0,0,0.12);
+            color: #1a1a1a; background: rgba(255,255,255,0.4);
             border-top: 1px solid rgba(0,0,0,0.1);
             border-bottom: 1px solid rgba(0,0,0,0.1);
         }
@@ -177,25 +174,25 @@
         /* Text box */
         .card-text-box {
             padding: 10px; min-height: 100px;
-            background: rgba(0,0,0,0.08); border-radius: 0 0 6px 6px;
+            background: rgba(255,255,255,0.35); border-radius: 0 0 6px 6px;
         }
         .card-rules {
-            font-size: 0.72rem; line-height: 1.5; color: #1a1a1a;
+            font-size: 0.75rem; line-height: 1.55; color: #1a1a1a;
             margin-bottom: 0.5rem;
         }
         .card-rules p { margin-bottom: 0.35rem; }
         .card-flavor {
-            font-size: 0.68rem; font-style: italic; color: #444;
-            border-top: 1px solid rgba(0,0,0,0.1); padding-top: 0.4rem;
-            line-height: 1.4;
+            font-size: 0.7rem; font-style: italic; color: #4a4a4a;
+            border-top: 1px solid rgba(0,0,0,0.12); padding-top: 0.4rem;
+            line-height: 1.45;
         }
 
         /* P/T box */
         .card-pt {
             position: absolute; bottom: 8px; right: 8px;
-            background: rgba(0,0,0,0.2); border: 1px solid rgba(0,0,0,0.15);
+            background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.15);
             border-radius: 6px; padding: 2px 10px;
-            font-size: 0.85rem; font-weight: 800; color: #111;
+            font-size: 0.85rem; font-weight: 800; color: #1a1a1a;
         }
 
         /* Rarity gem */
