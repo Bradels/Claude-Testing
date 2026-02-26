@@ -1,0 +1,39 @@
+Image Credits - All photos from Unsplash (https://unsplash.com)
+License: Unsplash License (free for commercial and non-commercial use)
+
+Claude, the Architect: Photo by A Chosen Soul on Unsplash
+Prompt Injection: Photo by Alex Shuper on Unsplash
+Recursive Function: Photo by Yevhenii Deshko on Unsplash
+Stack Overflow: Photo by Ardian Pranomo on Unsplash
+Merge Conflict: Photo by Andrej Lišakov on Unsplash
+Token Generator: Photo by Gabrielle Maurer on Unsplash
+Null Pointer: Photo by Kristina Shvedenko on Unsplash
+The Cloud Sandbox: Photo by TSD Studio on Unsplash
+Open Source Hydra: Photo by Ales Krivec on Unsplash
+Force Push: Photo by Frank Flores on Unsplash
+Infinite Loop: Photo by Pawel Czerwinski on Unsplash
+Tea: Photo by Levi Meir Clancy on Unsplash
+Tea Garden: Photo by Curated Lifestyle on Unsplash
+Greenhouse: Photo by Fellipe Ditadi on Unsplash
+Zen Garden: Photo by Getty Images on Unsplash
+The Mansion: Photo by Bruno Guerrero on Unsplash
+The Parlor: Photo by National Gallery of Art on Unsplash
+The Cellar: Photo by Annie Spratt on Unsplash
+The Gallery: Photo by Clay Banks on Unsplash
+Overgrown Manor: Photo by Stacey Knipe on Unsplash
+Tea Master: Photo by Diana Light on Unsplash
+Firebrew Adept: Photo by Mohamed Nohassi on Unsplash
+Scalding Preparation: Photo by Levi Meir Clancy on Unsplash
+Mindful Steeping: Photo by Luvia Lazo on Unsplash
+Kettle of Inspiration: Photo by George Dagerotip on Unsplash
+Ravenous Guest: Photo by Kateryna Hliznitsova on Unsplash
+Scalding Sipper: Photo by Grant Sahakyan on Unsplash
+Etiquette of Stillness: Photo by George Dagerotip on Unsplash
+Ceremony of Reflection: Photo by Markus Winkler on Unsplash
+Code of the Table: Photo by SJ Objio on Unsplash
+Fertile Offering: Photo by Roberta Sant'Anna on Unsplash
+Generous Canopy: Photo by Joshua Earle on Unsplash
+Gift of the Wellspring: Photo by Annie Spratt on Unsplash
+Porcelain Teapot: Photo by Wesley Tingey on Unsplash
+Debt Collector: Photo by Jordan González on Unsplash
+Ornamental Vase: Photo by laura adai on Unsplash

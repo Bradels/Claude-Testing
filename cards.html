@@ -148,50 +148,52 @@
         .card-art-inner {
             width: 100%; height: 100%;
             display: flex; align-items: center; justify-content: center;
-            font-size: 3rem; opacity: 0.6;
+            font-size: 0; color: transparent;
+            background-size: cover; background-position: center;
         }
 
-        /* Art patterns per card theme */
-        .art-architect { background: linear-gradient(135deg, #1a1a3e, #2a2a6e, #4a4aae); }
-        .art-injection { background: linear-gradient(135deg, #0a2a4a, #1a1a2e, #2a0a3a); }
-        .art-recursion { background: linear-gradient(135deg, #0e3a6e, #1a5a9e, #0a2a5e); }
-        .art-overflow { background: linear-gradient(135deg, #5e1a0a, #8e2a1a, #ae4a2a); }
-        .art-conflict { background: linear-gradient(135deg, #2a0a1a, #4a1a2a, #1a0a0a); }
-        .art-generator { background: linear-gradient(135deg, #0a3a1a, #1a5a2a, #2a7a3a); }
-        .art-null { background: linear-gradient(135deg, #0a0a0a, #1a1a2a, #0a0a1a); }
-        .art-sandbox { background: linear-gradient(135deg, #3a3a4a, #5a5a6a, #4a4a5a); }
-        .art-hydra { background: linear-gradient(135deg, #0a4a1a, #1a6a2a, #0a3a0a); }
-        .art-duck { background: linear-gradient(135deg, #e8e4c0, #f0ead0, #d8d0a0); }
-        .art-push { background: linear-gradient(135deg, #6e2a1a, #9e4a2a, #c06a3a); }
-        .art-loop { background: linear-gradient(135deg, #0a1a4a, #1a2a7a, #2a3aaa); }
+        /* Art images per card - stock photos from Unsplash */
+        .card-art-inner[class*="art-"] { background-size: cover; background-position: center; }
+        .art-architect { background-image: url('images/architect.jpg'); }
+        .art-injection { background-image: url('images/injection.jpg'); }
+        .art-recursion { background-image: url('images/recursion.jpg'); }
+        .art-overflow { background-image: url('images/overflow.jpg'); }
+        .art-conflict { background-image: url('images/conflict.jpg'); }
+        .art-generator { background-image: url('images/generator.jpg'); }
+        .art-null { background-image: url('images/null.jpg'); }
+        .art-sandbox { background-image: url('images/sandbox.jpg'); }
+        .art-hydra { background-image: url('images/hydra.jpg'); }
+        .art-duck { background-image: url('images/duck.jpg'); }
+        .art-push { background-image: url('images/push.jpg'); }
+        .art-loop { background-image: url('images/loop.jpg'); }
 
-        /* Tea Ceremony set — art patterns */
-        .art-tea-token { background: linear-gradient(135deg, #a07030, #c89050, #e8b870); }
-        .art-tea-garden { background: linear-gradient(135deg, #1a5a2a, #2a8a3a, #3aaa4a); }
-        .art-greenhouse { background: linear-gradient(135deg, #2a7a3a, #4aaa5a, #8acca0); }
-        .art-zen-garden { background: linear-gradient(135deg, #6a7a6a, #8a9a8a, #4a6a4a); }
-        .art-the-mansion { background: linear-gradient(135deg, #1a0a2a, #2a1a3a, #0a0a1a); }
-        .art-the-parlor { background: linear-gradient(135deg, #2a1a1a, #3a2a2a, #1a0a0a); }
-        .art-the-cellar { background: linear-gradient(135deg, #0a0a0a, #1a1a1a, #2a1a0a); }
-        .art-the-gallery { background: linear-gradient(135deg, #1a0a1a, #2a1a2a, #3a2a3a); }
-        .art-overgrown-manor { background: linear-gradient(135deg, #0a2a0a, #1a1a1a, #2a3a1a); }
-        .art-tea-master { background: linear-gradient(135deg, #e8dfc8, #f0e8d0, #d8cca8); }
-        .art-firebrew-adept { background: linear-gradient(135deg, #c04020, #e06030, #f08040); }
-        .art-scalding-preparation { background: linear-gradient(135deg, #a03020, #c04030, #e05040); }
-        .art-mindful-steeping { background: linear-gradient(135deg, #d8d0b8, #e8e0c8, #c8c0a8); }
-        .art-kettle-of-inspiration { background: linear-gradient(135deg, #b05030, #d07040, #e8a060); }
-        .art-ravenous-guest { background: linear-gradient(135deg, #1a0a2a, #2a0a3a, #3a1a4a); }
-        .art-scalding-sipper { background: linear-gradient(135deg, #c03010, #e04020, #f06030); }
-        .art-ember-glutton { background: linear-gradient(135deg, #4a0a0a, #6a1a1a, #2a0a0a); }
-        .art-etiquette-of-stillness { background: linear-gradient(135deg, #e8d8b8, #f0e8d0, #d8c8a0); }
-        .art-ceremony-of-reflection { background: linear-gradient(135deg, #2a4a8a, #3a5aaa, #4a6aca); }
-        .art-code-of-the-table { background: linear-gradient(135deg, #8a9aba, #a0b0d0, #b8c8e0); }
-        .art-fertile-offering { background: linear-gradient(135deg, #2a6a2a, #3a8a3a, #5aaa5a); }
-        .art-generous-canopy { background: linear-gradient(135deg, #1a5a1a, #2a7a2a, #4a9a3a); }
-        .art-gift-of-the-wellspring { background: linear-gradient(135deg, #1a5a4a, #2a7a6a, #3a9a8a); }
-        .art-porcelain-teapot { background: linear-gradient(135deg, #c8d8e8, #e0e8f0, #a8b8d0); }
-        .art-debt-collector { background: linear-gradient(135deg, #3a4a6a, #4a5a8a, #5a6aaa); }
-        .art-ornamental-vase { background: linear-gradient(135deg, #b8c8d8, #d0d8e8, #e0e8f0); }
+        /* Tea Ceremony set */
+        .art-tea-token { background-image: url('images/tea-token.jpg'); }
+        .art-tea-garden { background-image: url('images/tea-garden.jpg'); }
+        .art-greenhouse { background-image: url('images/greenhouse.jpg'); }
+        .art-zen-garden { background-image: url('images/zen-garden.jpg'); }
+        .art-the-mansion { background-image: url('images/the-mansion.jpg'); }
+        .art-the-parlor { background-image: url('images/the-parlor.jpg'); }
+        .art-the-cellar { background-image: url('images/the-cellar.jpg'); }
+        .art-the-gallery { background-image: url('images/the-gallery.jpg'); }
+        .art-overgrown-manor { background-image: url('images/overgrown-manor.jpg'); }
+        .art-tea-master { background-image: url('images/tea-master.jpg'); }
+        .art-firebrew-adept { background-image: url('images/firebrew-adept.jpg'); }
+        .art-scalding-preparation { background-image: url('images/scalding-preparation.jpg'); }
+        .art-mindful-steeping { background-image: url('images/mindful-steeping.jpg'); }
+        .art-kettle-of-inspiration { background-image: url('images/kettle-of-inspiration.jpg'); }
+        .art-ravenous-guest { background-image: url('images/ravenous-guest.jpg'); }
+        .art-scalding-sipper { background-image: url('images/scalding-sipper.jpg'); }
+        .art-ember-glutton { background-image: url('images/ember-glutton.jpg'); }
+        .art-etiquette-of-stillness { background-image: url('images/etiquette-of-stillness.jpg'); }
+        .art-ceremony-of-reflection { background-image: url('images/ceremony-of-reflection.jpg'); }
+        .art-code-of-the-table { background-image: url('images/code-of-the-table.jpg'); }
+        .art-fertile-offering { background-image: url('images/fertile-offering.jpg'); }
+        .art-generous-canopy { background-image: url('images/generous-canopy.jpg'); }
+        .art-gift-of-the-wellspring { background-image: url('images/gift-of-the-wellspring.jpg'); }
+        .art-porcelain-teapot { background-image: url('images/porcelain-teapot.jpg'); }
+        .art-debt-collector { background-image: url('images/debt-collector.jpg'); }
+        .art-ornamental-vase { background-image: url('images/ornamental-vase.jpg'); }
 
         /* Type line */
         .card-type-line {
