@@ -1,235 +1,701 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Claude Testing</title>
+    <title>Claude Code Cloud — Prompt-Only Website Creation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --accent: #d4a574;
+            --accent-light: #e8c9a0;
+            --accent-dark: #b8875a;
+        }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0a0a0a;
-            color: #e0e0e0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
+            background: #060609;
+            overflow-x: hidden;
         }
 
-        canvas {
+        /* Animated gradient orbs */
+        .orb {
             position: fixed;
-            top: 0;
-            left: 0;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.15;
+            pointer-events: none;
             z-index: 0;
         }
+        .orb-1 {
+            width: 600px; height: 600px;
+            background: var(--accent);
+            top: -200px; left: -100px;
+            animation: float1 20s ease-in-out infinite;
+        }
+        .orb-2 {
+            width: 500px; height: 500px;
+            background: #7c6ce0;
+            bottom: -150px; right: -100px;
+            animation: float2 25s ease-in-out infinite;
+        }
+        .orb-3 {
+            width: 400px; height: 400px;
+            background: #4ade80;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            animation: float3 18s ease-in-out infinite;
+            opacity: 0.08;
+        }
 
-        .container {
+        @keyframes float1 {
+            0%, 100% { transform: translate(0, 0); }
+            33% { transform: translate(80px, 60px); }
+            66% { transform: translate(-40px, 30px); }
+        }
+        @keyframes float2 {
+            0%, 100% { transform: translate(0, 0); }
+            33% { transform: translate(-60px, -40px); }
+            66% { transform: translate(30px, -80px); }
+        }
+        @keyframes float3 {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.3); }
+        }
+
+        .content-wrapper {
             position: relative;
             z-index: 1;
-            text-align: center;
-            padding: 2rem;
-            max-width: 700px;
         }
 
-        .logo {
-            font-size: 4rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #d4a574, #c47b4a, #e8c9a0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.02em;
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
         }
 
-        .subtitle {
-            font-size: 1.1rem;
-            color: #888;
-            margin-bottom: 2.5rem;
-            font-weight: 300;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 2rem;
-            backdrop-filter: blur(12px);
-            margin-bottom: 2rem;
-        }
-
-        .card h2 {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: #d4a574;
-        }
-
-        .card p {
-            line-height: 1.7;
-            color: #aaa;
-            font-size: 0.95rem;
-        }
-
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-
-        .feature {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 12px;
-            padding: 1.2rem;
-            text-align: left;
-            transition: border-color 0.3s, transform 0.3s;
-        }
-
-        .feature:hover {
-            border-color: rgba(212, 165, 116, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .feature .icon {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .feature .label {
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            border: 1px solid rgba(212, 165, 116, 0.3);
+            background: rgba(212, 165, 116, 0.08);
+            color: var(--accent-light);
             font-size: 0.85rem;
-            font-weight: 600;
-            color: #ccc;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
         }
 
-        .feature .desc {
-            font-size: 0.75rem;
-            color: #777;
-            margin-top: 0.3rem;
-        }
-
-        .footer {
-            margin-top: 2rem;
-            font-size: 0.8rem;
-            color: #555;
-        }
-
-        .pulse {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
+        .hero-badge .pulse-dot {
+            width: 8px; height: 8px;
             background: #4ade80;
             border-radius: 50%;
-            margin-right: 6px;
             animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.8); }
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); }
+            50% { opacity: 0.6; box-shadow: 0 0 0 6px rgba(74, 222, 128, 0); }
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 .gradient-text {
+            background: linear-gradient(135deg, var(--accent), var(--accent-light), var(--accent-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .lead {
+            font-size: 1.2rem;
+            color: #9ca3af;
+            max-width: 540px;
+            line-height: 1.7;
+        }
+
+        /* Terminal mockup */
+        .terminal {
+            background: #111118;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            overflow: hidden;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.82rem;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+        }
+
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .terminal-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+        }
+        .terminal-dot.red { background: #ff5f57; }
+        .terminal-dot.yellow { background: #febc2e; }
+        .terminal-dot.green { background: #28c840; }
+
+        .terminal-body {
+            padding: 1.25rem;
+            line-height: 1.8;
+            color: #a0a0b0;
+        }
+
+        .terminal-body .prompt {
+            color: var(--accent);
+        }
+
+        .terminal-body .cmd {
+            color: #e0e0e8;
+        }
+
+        .terminal-body .output {
+            color: #6b7280;
+        }
+
+        .terminal-body .success {
+            color: #4ade80;
+        }
+
+        .typing-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: var(--accent);
+            margin-left: 2px;
+            animation: blink 1s step-end infinite;
+            vertical-align: text-bottom;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        /* Section spacing */
+        section { padding: 6rem 0; }
+
+        .section-label {
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+        }
+
+        .section-title {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            color: #6b7280;
+            font-size: 1.05rem;
+            max-width: 600px;
+            line-height: 1.7;
+        }
+
+        /* Feature cards */
+        .feature-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 2rem;
+            height: 100%;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(212, 165, 116, 0.25);
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .feature-icon.amber {
+            background: rgba(212, 165, 116, 0.12);
+            color: var(--accent-light);
+        }
+        .feature-icon.purple {
+            background: rgba(124, 108, 224, 0.12);
+            color: #a78bfa;
+        }
+        .feature-icon.green {
+            background: rgba(74, 222, 128, 0.12);
+            color: #4ade80;
+        }
+        .feature-icon.blue {
+            background: rgba(96, 165, 250, 0.12);
+            color: #60a5fa;
+        }
+        .feature-icon.pink {
+            background: rgba(244, 114, 182, 0.12);
+            color: #f472b6;
+        }
+        .feature-icon.cyan {
+            background: rgba(34, 211, 238, 0.12);
+            color: #22d3ee;
+        }
+
+        .feature-card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-card p {
+            color: #6b7280;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* How it works — timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2.5rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--accent), rgba(212,165,116,0.1));
+        }
+
+        .timeline-step {
+            position: relative;
+            margin-bottom: 2.5rem;
+        }
+
+        .timeline-step:last-child { margin-bottom: 0; }
+
+        .timeline-dot {
+            position: absolute;
+            left: -2.5rem;
+            top: 4px;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: #111118;
+            border: 2px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .timeline-step h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .timeline-step p {
+            color: #6b7280;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* Stats */
+        .stat-card {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        /* CTA */
+        .cta-section {
+            background: rgba(212, 165, 116, 0.04);
+            border: 1px solid rgba(212, 165, 116, 0.1);
+            border-radius: 24px;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            color: #000;
+            border: none;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-accent:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(212, 165, 116, 0.25);
+            color: #000;
+        }
+
+        .btn-outline-accent {
+            border: 1px solid rgba(212, 165, 116, 0.4);
+            color: var(--accent-light);
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: transparent;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .btn-outline-accent:hover {
+            background: rgba(212, 165, 116, 0.08);
+            border-color: var(--accent);
+            color: var(--accent-light);
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding: 3rem 0;
+            color: #4b5563;
+            font-size: 0.85rem;
+        }
+
+        /* Scroll reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
 <body>
-    <canvas id="bg"></canvas>
 
-    <div class="container">
-        <div class="logo">Claude Testing</div>
-        <div class="subtitle">Built and deployed by Claude Code in a cloud sandbox</div>
+    <!-- Background orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
 
-        <div class="card">
-            <h2>What happened here?</h2>
-            <p>
-                A user asked Claude Code — running in a cloud environment connected to this
-                GitHub repo — to build and deploy a website. Claude wrote this page, committed
-                it, pushed to a branch, and enabled GitHub Pages. All autonomously.
-            </p>
-        </div>
+    <div class="content-wrapper">
 
-        <div class="features">
-            <div class="feature">
-                <div class="icon">&#128736;</div>
-                <div class="label">Full Dev Environment</div>
-                <div class="desc">Node.js, Python, PHP, Ruby &mdash; all available</div>
+        <!-- Navbar -->
+        <nav class="navbar navbar-dark fixed-top" style="background: rgba(6,6,9,0.8); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <div class="container">
+                <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="#">
+                    <i class="bi bi-lightning-charge-fill" style="color: var(--accent);"></i>
+                    Claude Code Cloud
+                </a>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="https://docs.anthropic.com/en/docs/claude-code" class="btn btn-sm btn-outline-accent" target="_blank">
+                        <i class="bi bi-book me-1"></i> Docs
+                    </a>
+                    <a href="https://github.com/Bradels/Claude-Testing" class="btn btn-sm btn-accent" target="_blank">
+                        <i class="bi bi-github me-1"></i> Repo
+                    </a>
+                </div>
             </div>
-            <div class="feature">
-                <div class="icon">&#128268;</div>
-                <div class="label">Git Integration</div>
-                <div class="desc">Branch, commit, push, create PRs</div>
-            </div>
-            <div class="feature">
-                <div class="icon">&#127760;</div>
-                <div class="label">Web Access</div>
-                <div class="desc">Search the web, fetch docs, call APIs</div>
-            </div>
-            <div class="feature">
-                <div class="icon">&#129302;</div>
-                <div class="label">Multi-Agent</div>
-                <div class="desc">Parallel sub-agents for complex tasks</div>
-            </div>
-        </div>
+        </nav>
 
-        <div class="footer">
-            <span class="pulse"></span> Deployed via GitHub Pages &middot; Feb 2026
-        </div>
+        <!-- Hero -->
+        <section class="hero">
+            <div class="container">
+                <div class="row align-items-center g-5">
+                    <div class="col-lg-6">
+                        <div class="hero-badge">
+                            <span class="pulse-dot"></span>
+                            Experiment in progress
+                        </div>
+                        <h1>
+                            Websites from<br>
+                            <span class="gradient-text">prompts alone.</span>
+                        </h1>
+                        <p class="lead">
+                            This entire website was created, committed, and deployed by
+                            <strong class="text-light">Claude Code</strong> running in a cloud sandbox.
+                            No human wrote a single line of code. Just a conversation.
+                        </p>
+                        <div class="d-flex gap-3 mt-4 flex-wrap">
+                            <a href="#how-it-works" class="btn btn-accent">
+                                See how it works <i class="bi bi-arrow-down-short"></i>
+                            </a>
+                            <a href="https://github.com/Bradels/Claude-Testing" class="btn btn-outline-accent" target="_blank">
+                                View source <i class="bi bi-code-slash"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="terminal">
+                            <div class="terminal-header">
+                                <span class="terminal-dot red"></span>
+                                <span class="terminal-dot yellow"></span>
+                                <span class="terminal-dot green"></span>
+                                <span style="margin-left: 8px; color: #555; font-size: 0.75rem;">claude-code</span>
+                            </div>
+                            <div class="terminal-body">
+                                <div><span class="prompt">user $</span> <span class="cmd">go and deploy the static page</span></div>
+                                <br>
+                                <div><span class="output">Creating branch claude/explore-features...</span></div>
+                                <div><span class="output">Writing index.html...</span></div>
+                                <div><span class="output">Adding Bootstrap 5.3 framework...</span></div>
+                                <div><span class="output">Committing changes...</span></div>
+                                <div><span class="output">Pushing to origin...</span></div>
+                                <br>
+                                <div><span class="success"><i class="bi bi-check-circle-fill"></i> Site deployed to GitHub Pages</span></div>
+                                <div><span class="success"><i class="bi bi-link-45deg"></i> bradels.github.io/Claude-Testing</span></div>
+                                <span class="typing-cursor"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- What is this -->
+        <section id="about">
+            <div class="container">
+                <div class="row justify-content-center text-center mb-5 reveal">
+                    <div class="col-lg-7">
+                        <div class="section-label">The Experiment</div>
+                        <h2 class="section-title">A test of prompt-only<br>website creation</h2>
+                        <p class="section-subtitle mx-auto">
+                            This project explores what happens when you give Claude Code — Anthropic's
+                            agentic coding tool — access to a GitHub repo in a cloud sandbox and simply
+                            ask it to build and ship a website. No templates. No scaffolding. Just natural language.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-4 reveal">
+                        <div class="stat-card">
+                            <div class="stat-value">0</div>
+                            <div class="stat-label">Lines of code written by a human</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 reveal">
+                        <div class="stat-card">
+                            <div class="stat-value">1</div>
+                            <div class="stat-label">Prompt to create this page</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 reveal">
+                        <div class="stat-card">
+                            <div class="stat-value">&lt;60s</div>
+                            <div class="stat-label">From prompt to deployed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Capabilities -->
+        <section id="capabilities">
+            <div class="container">
+                <div class="row mb-5 reveal">
+                    <div class="col-lg-5">
+                        <div class="section-label">Capabilities</div>
+                        <h2 class="section-title">What Claude Code can do in the cloud</h2>
+                        <p class="section-subtitle">
+                            A full development environment, accessible through conversation.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6 col-lg-4 reveal">
+                        <div class="feature-card">
+                            <div class="feature-icon amber"><i class="bi bi-filetype-html"></i></div>
+                            <h3>Build Full Websites</h3>
+                            <p>Generates production-quality HTML, CSS, and JavaScript from natural language descriptions.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4 reveal">
+                        <div class="feature-card">
+                            <div class="feature-icon purple"><i class="bi bi-git"></i></div>
+                            <h3>Git Operations</h3>
+                            <p>Creates branches, stages files, writes commit messages, and pushes to remote repositories.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4 reveal">
+                        <div class="feature-card">
+                            <div class="feature-icon green"><i class="bi bi-rocket-takeoff"></i></div>
+                            <h3>Deploy Automatically</h3>
+                            <p>Sets up GitHub Pages, configures workflows, and gets your site live without manual steps.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4 reveal">
+                        <div class="feature-card">
+                            <div class="feature-icon blue"><i class="bi bi-terminal"></i></div>
+                            <h3>Run Any Command</h3>
+                            <p>Full shell access to install packages, run builds, execute tests, and manage the environment.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4 reveal">
+                        <div class="feature-card">
+                            <div class="feature-icon pink"><i class="bi bi-search"></i></div>
+                            <h3>Web Research</h3>
+                            <p>Searches the web, reads documentation, and fetches API data to inform its work.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4 reveal">
+                        <div class="feature-card">
+                            <div class="feature-icon cyan"><i class="bi bi-diagram-3"></i></div>
+                            <h3>Multi-Agent Workflows</h3>
+                            <p>Spawns parallel sub-agents to research, explore codebases, and tackle complex tasks faster.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How it works -->
+        <section id="how-it-works">
+            <div class="container">
+                <div class="row g-5 align-items-start">
+                    <div class="col-lg-5 reveal">
+                        <div class="section-label">Process</div>
+                        <h2 class="section-title">How this site was made</h2>
+                        <p class="section-subtitle">
+                            The entire flow from idea to live website, driven entirely by
+                            conversation with Claude Code.
+                        </p>
+                    </div>
+                    <div class="col-lg-6 offset-lg-1 reveal">
+                        <div class="timeline">
+                            <div class="timeline-step">
+                                <div class="timeline-dot">1</div>
+                                <h4>User sends a prompt</h4>
+                                <p>"Go and deploy the static page" — that's the starting point. No files, no boilerplate.</p>
+                            </div>
+                            <div class="timeline-step">
+                                <div class="timeline-dot">2</div>
+                                <h4>Claude creates a branch</h4>
+                                <p>A new Git branch is created in the connected repository to isolate the work.</p>
+                            </div>
+                            <div class="timeline-step">
+                                <div class="timeline-dot">3</div>
+                                <h4>Code is generated</h4>
+                                <p>HTML, CSS, and JavaScript are written from scratch — framework included, responsive and polished.</p>
+                            </div>
+                            <div class="timeline-step">
+                                <div class="timeline-dot">4</div>
+                                <h4>Commit &amp; push</h4>
+                                <p>Changes are committed with a descriptive message and pushed to the remote branch.</p>
+                            </div>
+                            <div class="timeline-step">
+                                <div class="timeline-dot">5</div>
+                                <h4>Site goes live</h4>
+                                <p>GitHub Pages picks up the branch and the website is deployed — accessible to the world.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section>
+            <div class="container">
+                <div class="cta-section reveal">
+                    <div class="section-label">Try it yourself</div>
+                    <h2 class="section-title mb-3">Curious? Give Claude Code a spin.</h2>
+                    <p class="section-subtitle mx-auto mb-4" style="text-align: center;">
+                        Connect a repo, describe what you want, and watch it build.
+                    </p>
+                    <div class="d-flex gap-3 justify-content-center flex-wrap">
+                        <a href="https://docs.anthropic.com/en/docs/claude-code" class="btn btn-accent" target="_blank">
+                            Read the docs <i class="bi bi-arrow-right"></i>
+                        </a>
+                        <a href="https://github.com/Bradels/Claude-Testing" class="btn btn-outline-accent" target="_blank">
+                            <i class="bi bi-github me-1"></i> View this repo
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-lightning-charge-fill" style="color: var(--accent);"></i>
+                    <span>Built autonomously by Claude Code</span>
+                </div>
+                <div>
+                    <span class="d-inline-flex align-items-center gap-1">
+                        <span style="width:6px;height:6px;background:#4ade80;border-radius:50;display:inline-block;"></span>
+                        Deployed via GitHub Pages
+                    </span>
+                    &middot; Feb 2026
+                </div>
+            </div>
+        </footer>
+
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const canvas = document.getElementById('bg');
-        const ctx = canvas.getContext('2d');
-        let w, h, particles;
-
-        function init() {
-            w = canvas.width = window.innerWidth;
-            h = canvas.height = window.innerHeight;
-            particles = Array.from({ length: 60 }, () => ({
-                x: Math.random() * w,
-                y: Math.random() * h,
-                r: Math.random() * 1.5 + 0.5,
-                dx: (Math.random() - 0.5) * 0.4,
-                dy: (Math.random() - 0.5) * 0.4,
-                o: Math.random() * 0.3 + 0.1,
-            }));
-        }
-
-        function draw() {
-            ctx.clearRect(0, 0, w, h);
-            for (const p of particles) {
-                p.x += p.dx;
-                p.y += p.dy;
-                if (p.x < 0 || p.x > w) p.dx *= -1;
-                if (p.y < 0 || p.y > h) p.dy *= -1;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(212, 165, 116, ${p.o})`;
-                ctx.fill();
-            }
-            // draw lines between nearby particles
-            for (let i = 0; i < particles.length; i++) {
-                for (let j = i + 1; j < particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 150) {
-                        ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.strokeStyle = `rgba(212, 165, 116, ${0.06 * (1 - dist / 150)})`;
-                        ctx.stroke();
-                    }
+        // Scroll reveal
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
                 }
-            }
-            requestAnimationFrame(draw);
-        }
+            });
+        }, { threshold: 0.15 });
 
-        window.addEventListener('resize', init);
-        init();
-        draw();
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                const target = document.querySelector(a.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
     </script>
 </body>
 </html>
