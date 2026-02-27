@@ -223,11 +223,11 @@
             background: #c8bfa8;
         }
 
-        /* Entrance animation — animate opacity only, no transform conflict */
-        .flip-card {
+        /* Entrance animation on wrapper — keeps flip-card free of any animation/transform */
+        .deal-slot {
             opacity: 0;
         }
-        .flip-card.dealt {
+        .deal-slot.dealt {
             animation: dealCard 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
         @keyframes dealCard {
@@ -506,7 +506,7 @@
         @media (prefers-reduced-motion: reduce) {
             .orb { animation: none !important; }
             .flip-card-inner { transition: none !important; }
-            .flip-card { animation: none !important; opacity: 1 !important; transform: none !important; }
+            .deal-slot { animation: none !important; opacity: 1 !important; transform: none !important; }
         }
 
         footer { border-top: 1px solid rgba(255,255,255,0.06); padding: 2rem 0; color: #4b5563; font-size: 0.85rem; }
@@ -799,9 +799,13 @@
                     const rarityLabel = `<span class="rarity-label rl-${card.rarity}">${card.rarity}</span>`;
                     const newBadge = isNew ? '<span class="new-badge">New!</span>' : '';
 
+                    // Wrapper for deal animation (keeps flip-card free of animation stacking context)
+                    const dealSlot = document.createElement('div');
+                    dealSlot.className = 'deal-slot';
+                    dealSlot.style.animationDelay = `${i * 0.15}s`;
+
                     const flipCard = document.createElement('div');
                     flipCard.className = `flip-card ${glowClass}`;
-                    flipCard.style.animationDelay = `${i * 0.15}s`;
                     flipCard.dataset.rarity = card.rarity;
 
                     flipCard.innerHTML = `
@@ -820,10 +824,11 @@
                             </div>
                         </div>`;
 
-                    revealCards.appendChild(flipCard);
+                    dealSlot.appendChild(flipCard);
+                    revealCards.appendChild(dealSlot);
 
-                    // Deal animation
-                    setTimeout(() => flipCard.classList.add('dealt'), i * 150 + 50);
+                    // Deal animation on wrapper
+                    setTimeout(() => dealSlot.classList.add('dealt'), i * 150 + 50);
 
                     // Click to flip
                     flipCard.addEventListener('click', () => {
