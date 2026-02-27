@@ -172,6 +172,7 @@
         /* ── Flip card container ── */
         .flip-card {
             width: 252px; height: 352px; perspective: 1000px; cursor: pointer;
+            transform-style: preserve-3d;
         }
         .flip-card-inner {
             width: 100%; height: 100%; position: relative;
@@ -184,6 +185,7 @@
 
         .flip-card-front, .flip-card-back {
             position: absolute; inset: 0;
+            -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
             border-radius: 16px; overflow: hidden;
         }
@@ -218,17 +220,19 @@
         /* Card front (face-up) */
         .flip-card-back {
             transform: rotateY(180deg);
+            background: #c8bfa8;
         }
 
-        /* Entrance animation for each card */
+        /* Entrance animation — animate opacity only, no transform conflict */
         .flip-card {
-            opacity: 0; transform: translateY(40px) scale(0.8);
+            opacity: 0;
         }
         .flip-card.dealt {
             animation: dealCard 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
         @keyframes dealCard {
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: none; }
         }
 
         /* ── Rarity glow on reveal ── */
