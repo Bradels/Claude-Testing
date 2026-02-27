@@ -235,15 +235,18 @@
             100% { opacity: 1; transform: none; }
         }
 
-        /* ── Rarity glow on reveal ── */
-        .flip-card.flipped.rarity-glow-uncommon .flip-card-inner {
-            filter: drop-shadow(0 0 10px rgba(192,204,216,0.3));
+        /* ── Rarity glow on reveal (use box-shadow, NOT filter — filter flattens preserve-3d) ── */
+        .flip-card.flipped.rarity-glow-uncommon {
+            box-shadow: 0 0 15px 3px rgba(192,204,216,0.3);
+            border-radius: 16px;
         }
-        .flip-card.flipped.rarity-glow-rare .flip-card-inner {
-            filter: drop-shadow(0 0 15px rgba(232,200,74,0.4));
+        .flip-card.flipped.rarity-glow-rare {
+            box-shadow: 0 0 20px 5px rgba(232,200,74,0.4);
+            border-radius: 16px;
         }
-        .flip-card.flipped.rarity-glow-mythic .flip-card-inner {
-            filter: drop-shadow(0 0 25px rgba(232,90,32,0.5));
+        .flip-card.flipped.rarity-glow-mythic {
+            box-shadow: 0 0 30px 8px rgba(232,90,32,0.5);
+            border-radius: 16px;
         }
 
         /* ── Holographic overlay for rares/mythics ── */
