@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deck Builder — Claude Code Cloud</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #d4a574;
+            --accent-light: #e8c9a0;
+            --accent-dark: #b8875a;
+            --color-white: #f9faf4;
+            --color-blue: #0e68ab;
+            --color-black: #393135;
+            --color-red: #d3202a;
+            --color-green: #00733e;
+            --color-gold: #c5a866;
+            --color-colorless: #9aa5b1;
+        }
+
+        body { background: #060609; overflow-x: hidden; min-height: 100vh; }
+
+        /* ── Orbs ── */
+        .orb { position: fixed; border-radius: 50%; filter: blur(120px); opacity: 0.10; pointer-events: none; z-index: 0; }
+        .orb-1 { width: 600px; height: 600px; background: #7c6ce0; top: -200px; right: -150px; animation: f1 22s ease-in-out infinite; }
+        .orb-2 { width: 500px; height: 500px; background: var(--accent); bottom: -150px; left: -120px; animation: f2 18s ease-in-out infinite; }
+        .orb-3 { width: 350px; height: 350px; background: #4ade80; top: 40%; left: 30%; animation: f3 26s ease-in-out infinite; opacity: 0.05; }
+        @keyframes f1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-80px,60px)} }
+        @keyframes f2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(50px,-60px)} }
+        @keyframes f3 { 0%,100%{transform:translate(-50%,-50%) scale(1)} 50%{transform:translate(-50%,-50%) scale(1.2)} }
+
+        .content-wrapper { position: relative; z-index: 1; }
+
+        /* ── Shared nav ── */
+        .theme-toggle {
+            width: 40px; height: 40px; border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05);
+            color: var(--accent-light); display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; cursor: pointer; transition: background 0.3s, border-color 0.3s, transform 0.3s;
+        }
+        .theme-toggle:hover { background: rgba(255,255,255,0.1); border-color: var(--accent); transform: scale(1.05); }
+        .theme-toggle .bi-sun-fill { display: none; }
+        .theme-toggle .bi-moon-stars-fill { display: inline; }
+        .btn-accent {
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            color: #000; border: none; padding: 0.5rem 1.25rem; font-weight: 600;
+            border-radius: 10px; font-size: 0.85rem; transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-accent:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,165,116,0.25); color: #000; }
+        .btn-outline-accent {
+            border: 1px solid rgba(212,165,116,0.4); color: var(--accent-light);
+            padding: 0.5rem 1.25rem; font-weight: 600; border-radius: 10px; font-size: 0.85rem;
+            background: transparent; transition: background 0.2s, border-color 0.2s;
+        }
+        .btn-outline-accent:hover { background: rgba(212,165,116,0.08); border-color: var(--accent); color: var(--accent-light); }
+
+        /* ── Page header ── */
+        .page-header { padding: 7rem 0 1.5rem; text-align: center; }
+        .page-title {
+            font-size: clamp(2rem, 5vw, 3rem); font-weight: 800;
+            letter-spacing: -0.02em; margin-bottom: 0.5rem;
+        }
+        .page-subtitle { color: #888; font-size: 1.05rem; max-width: 550px; margin: 0 auto; }
+
+        /* ── Layout ── */
+        .builder-layout {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 1.5rem;
+            padding-bottom: 4rem;
+            min-height: 70vh;
+        }
+        @media (max-width: 991px) {
+            .builder-layout { grid-template-columns: 1fr; }
+        }
+
+        /* ── Filters ── */
+        .filter-bar {
+            display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.25rem;
+            align-items: center;
+        }
+        .filter-btn {
+            padding: 0.3rem 0.85rem; border-radius: 50px; font-size: 0.75rem; font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04);
+            color: #999; cursor: pointer; transition: all 0.25s; white-space: nowrap;
+        }
+        .filter-btn:hover { border-color: rgba(255,255,255,0.2); color: #ccc; }
+        .filter-btn.active { border-color: var(--accent); color: var(--accent-light); background: rgba(212,165,116,0.1); }
+        .filter-sep { width: 1px; height: 20px; background: rgba(255,255,255,0.08); margin: 0 0.25rem; }
+
+        .search-input {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 0.4rem 0.85rem; color: #ccc; font-size: 0.85rem;
+            outline: none; width: 200px; transition: border-color 0.25s;
+        }
+        .search-input::placeholder { color: #555; }
+        .search-input:focus { border-color: var(--accent); }
+
+        /* ── Collection grid ── */
+        .collection-panel {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+        .collection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 0.75rem;
+            max-height: 65vh;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+        .collection-grid::-webkit-scrollbar { width: 6px; }
+        .collection-grid::-webkit-scrollbar-track { background: transparent; }
+        .collection-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+        /* ── Mini card ── */
+        .mini-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 0.65rem 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .mini-card:hover {
+            border-color: rgba(212,165,116,0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        }
+        .mini-card.in-deck {
+            border-color: rgba(74, 222, 128, 0.4);
+            background: rgba(74, 222, 128, 0.05);
+        }
+        .mini-card-name {
+            font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .mini-card-info {
+            display: flex; align-items: center; gap: 0.4rem;
+            font-size: 0.7rem; color: #777;
+        }
+        .mini-card-cost {
+            display: flex; gap: 2px; align-items: center;
+        }
+        .mana-pip {
+            width: 16px; height: 16px; border-radius: 50%; font-size: 0.55rem;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-weight: 700; color: #000; flex-shrink: 0;
+        }
+        .mana-pip.W { background: var(--color-white); }
+        .mana-pip.U { background: var(--color-blue); color: #fff; }
+        .mana-pip.B { background: var(--color-black); color: #fff; }
+        .mana-pip.R { background: var(--color-red); color: #fff; }
+        .mana-pip.G { background: var(--color-green); color: #fff; }
+        .mana-pip.C { background: var(--color-colorless); }
+        .mana-pip.X { background: var(--color-colorless); }
+
+        .rarity-dot {
+            width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+        }
+        .rarity-dot.common { background: #555; }
+        .rarity-dot.uncommon { background: #c0c0c0; }
+        .rarity-dot.rare { background: var(--color-gold); }
+        .rarity-dot.mythic { background: #e05d44; }
+
+        .mini-card-type {
+            font-size: 0.65rem; color: #666;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .mini-card-count {
+            position: absolute; top: 4px; right: 6px;
+            background: rgba(74,222,128,0.9); color: #000;
+            width: 18px; height: 18px; border-radius: 50%;
+            font-size: 0.65rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* ── Deck panel ── */
+        .deck-panel {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 80px;
+            max-height: calc(100vh - 100px);
+        }
+        .deck-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1rem; padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .deck-title { font-size: 1.1rem; font-weight: 700; }
+        .deck-count {
+            font-size: 0.85rem; color: var(--accent-light); font-weight: 600;
+        }
+        .deck-actions {
+            display: flex; gap: 0.5rem; margin-bottom: 1rem;
+        }
+        .deck-action-btn {
+            flex: 1; padding: 0.35rem 0.5rem; border-radius: 8px; font-size: 0.75rem;
+            font-weight: 600; border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.04); color: #999; cursor: pointer;
+            transition: all 0.2s; text-align: center;
+        }
+        .deck-action-btn:hover { border-color: var(--accent); color: var(--accent-light); }
+        .deck-action-btn.danger:hover { border-color: #ef4444; color: #ef4444; }
+
+        /* ── Deck list ── */
+        .deck-list {
+            flex: 1; overflow-y: auto; margin-bottom: 1rem;
+            min-height: 100px;
+        }
+        .deck-list::-webkit-scrollbar { width: 6px; }
+        .deck-list::-webkit-scrollbar-track { background: transparent; }
+        .deck-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+        .deck-entry {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 0.5rem; border-radius: 6px;
+            transition: background 0.15s; cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .deck-entry:hover { background: rgba(255,255,255,0.04); }
+        .deck-entry-qty {
+            color: var(--accent); font-weight: 700; min-width: 18px; text-align: center;
+        }
+        .deck-entry-name {
+            flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .deck-entry-cost { display: flex; gap: 1px; }
+        .deck-entry-cost .mana-pip { width: 14px; height: 14px; font-size: 0.5rem; }
+        .deck-entry-remove {
+            opacity: 0; color: #ef4444; font-size: 0.75rem; cursor: pointer;
+            transition: opacity 0.15s;
+        }
+        .deck-entry:hover .deck-entry-remove { opacity: 1; }
+
+        .deck-empty {
+            text-align: center; padding: 2rem 1rem; color: #555;
+            font-size: 0.85rem;
+        }
+        .deck-empty i { font-size: 2rem; display: block; margin-bottom: 0.75rem; color: #444; }
+
+        /* ── Stats ── */
+        .stats-section {
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding-top: 1rem;
+        }
+        .stats-title {
+            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;
+            color: #666; font-weight: 600; margin-bottom: 0.75rem;
+        }
+
+        /* Mana curve */
+        .mana-curve {
+            display: flex; align-items: flex-end; gap: 4px; height: 60px;
+            margin-bottom: 0.75rem;
+        }
+        .curve-bar-wrap {
+            flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+        }
+        .curve-bar {
+            width: 100%; border-radius: 3px 3px 0 0;
+            background: linear-gradient(to top, var(--accent-dark), var(--accent));
+            min-height: 2px; transition: height 0.3s;
+        }
+        .curve-label { font-size: 0.6rem; color: #666; }
+        .curve-count { font-size: 0.6rem; color: #999; font-weight: 600; }
+
+        /* Color distribution */
+        .color-dist {
+            display: flex; gap: 0.5rem; flex-wrap: wrap;
+        }
+        .color-chip {
+            display: flex; align-items: center; gap: 0.3rem;
+            font-size: 0.7rem; color: #999;
+        }
+        .color-chip-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+        }
+
+        /* ── Saved decks modal ── */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px); z-index: 1000;
+            display: none; align-items: center; justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: #111118; border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 2rem; max-width: 480px; width: 90%;
+            max-height: 80vh; overflow-y: auto;
+        }
+        .modal-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 1.5rem; }
+        .modal-close {
+            float: right; background: none; border: none; color: #666;
+            font-size: 1.2rem; cursor: pointer; transition: color 0.2s;
+        }
+        .modal-close:hover { color: #fff; }
+        .saved-deck-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.75rem 1rem; border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px; margin-bottom: 0.5rem; cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .saved-deck-item:hover { border-color: var(--accent); }
+        .saved-deck-name { font-weight: 600; font-size: 0.9rem; }
+        .saved-deck-info { font-size: 0.75rem; color: #666; }
+        .saved-deck-delete {
+            background: none; border: none; color: #555; cursor: pointer;
+            font-size: 0.9rem; padding: 0.25rem; transition: color 0.2s;
+        }
+        .saved-deck-delete:hover { color: #ef4444; }
+        .save-input-row {
+            display: flex; gap: 0.5rem; margin-bottom: 1rem;
+        }
+        .save-input {
+            flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; padding: 0.5rem 0.75rem; color: #ccc; font-size: 0.85rem; outline: none;
+        }
+        .save-input:focus { border-color: var(--accent); }
+        .no-saved { text-align: center; color: #555; font-size: 0.85rem; padding: 1.5rem; }
+
+        /* ── Card detail tooltip ── */
+        .card-tooltip {
+            position: fixed; z-index: 500; pointer-events: none;
+            background: #16161e; border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 12px; padding: 1rem; width: 260px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+            opacity: 0; transition: opacity 0.15s;
+        }
+        .card-tooltip.visible { opacity: 1; }
+        .tooltip-name { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.25rem; }
+        .tooltip-type { font-size: 0.75rem; color: #888; margin-bottom: 0.5rem; }
+        .tooltip-text { font-size: 0.78rem; color: #b0b0b0; line-height: 1.5; margin-bottom: 0.5rem; }
+        .tooltip-flavor { font-size: 0.75rem; color: #777; font-style: italic; }
+        .tooltip-stats { font-size: 0.8rem; font-weight: 700; color: var(--accent-light); margin-top: 0.5rem; }
+
+        /* ── Toast notification ── */
+        .toast-msg {
+            position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px);
+            background: rgba(17,17,24,0.95); border: 1px solid rgba(212,165,116,0.3);
+            border-radius: 10px; padding: 0.6rem 1.25rem; font-size: 0.85rem;
+            color: var(--accent-light); font-weight: 500; z-index: 2000;
+            opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none;
+        }
+        .toast-msg.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* ── Footer ── */
+        footer {
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding: 2rem 0; font-size: 0.85rem; color: #666;
+        }
+
+        /* ── Light theme ── */
+        [data-bs-theme="light"] body { background: #f8f7f4; }
+        [data-bs-theme="light"] .orb { opacity: 0.06; }
+        [data-bs-theme="light"] nav.navbar { background: rgba(248,247,244,0.85) !important; border-bottom-color: rgba(0,0,0,0.06) !important; }
+        [data-bs-theme="light"] .navbar-brand { color: #1a1a2e; }
+        [data-bs-theme="light"] .page-title { color: #1a1a2e; }
+        [data-bs-theme="light"] .page-subtitle { color: #555; }
+        [data-bs-theme="light"] .collection-panel,
+        [data-bs-theme="light"] .deck-panel { background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.08); }
+        [data-bs-theme="light"] .mini-card { background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.08); }
+        [data-bs-theme="light"] .mini-card:hover { border-color: rgba(212,165,116,0.4); }
+        [data-bs-theme="light"] .mini-card.in-deck { background: rgba(74,222,128,0.06); border-color: rgba(74,222,128,0.3); }
+        [data-bs-theme="light"] .mini-card-name { color: #1a1a2e; }
+        [data-bs-theme="light"] .deck-entry:hover { background: rgba(0,0,0,0.03); }
+        [data-bs-theme="light"] .filter-btn { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.1); color: #666; }
+        [data-bs-theme="light"] .filter-btn.active { background: rgba(212,165,116,0.1); border-color: var(--accent); color: var(--accent-dark); }
+        [data-bs-theme="light"] .search-input { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.1); color: #333; }
+        [data-bs-theme="light"] .deck-action-btn { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.1); color: #666; }
+        [data-bs-theme="light"] .deck-title { color: #1a1a2e; }
+        [data-bs-theme="light"] .card-tooltip { background: #fff; border-color: rgba(0,0,0,0.1); }
+        [data-bs-theme="light"] .tooltip-name { color: #1a1a2e; }
+        [data-bs-theme="light"] .tooltip-text { color: #444; }
+        [data-bs-theme="light"] .modal-box { background: #fff; border-color: rgba(0,0,0,0.1); }
+        [data-bs-theme="light"] .theme-toggle { border-color: rgba(0,0,0,0.1); background: rgba(0,0,0,0.04); color: var(--accent-dark); }
+        [data-bs-theme="light"] .theme-toggle:hover { background: rgba(0,0,0,0.08); }
+        [data-bs-theme="light"] .theme-toggle .bi-sun-fill { display: inline; }
+        [data-bs-theme="light"] .theme-toggle .bi-moon-stars-fill { display: none; }
+        [data-bs-theme="light"] .btn-outline-accent { color: var(--accent-dark); }
+        [data-bs-theme="light"] footer { border-top-color: rgba(0,0,0,0.06); color: #999; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .orb { animation: none !important; }
+            * { transition-duration: 0s !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="content-wrapper">
+
+        <!-- Navbar -->
+        <nav class="navbar navbar-dark fixed-top" style="background: rgba(6,6,9,0.8); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <div class="container-fluid px-3">
+                <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
+                    <i class="bi bi-lightning-charge-fill" style="color: var(--accent);"></i>
+                    Claude Code Cloud
+                </a>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="index.html" class="btn btn-sm btn-outline-accent">
+                        <i class="bi bi-house me-1"></i> Home
+                    </a>
+                    <a href="claude-says.html" class="btn btn-sm btn-outline-accent">
+                        <i class="bi bi-pencil-square me-1"></i> Blog
+                    </a>
+                    <a href="cards.html" class="btn btn-sm btn-outline-accent">
+                        <i class="bi bi-suit-spade-fill me-1"></i> Cards
+                    </a>
+                    <a href="open-packs.html" class="btn btn-sm btn-outline-accent">
+                        <i class="bi bi-box-seam me-1"></i> Packs
+                    </a>
+                    <a href="showcase.html" class="btn btn-sm btn-outline-accent">
+                        <i class="bi bi-gem me-1"></i> Showcase
+                    </a>
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <i class="bi bi-moon-stars-fill"></i>
+                        <i class="bi bi-sun-fill"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container-fluid px-3 px-lg-4">
+
+            <!-- Header -->
+            <div class="page-header">
+                <h1 class="page-title">Deck Builder</h1>
+                <p class="page-subtitle">Browse the collection, click cards to build a deck, and track your mana curve in real time.</p>
+            </div>
+
+            <!-- Main layout -->
+            <div class="builder-layout">
+
+                <!-- Left: Collection -->
+                <div class="collection-panel">
+                    <div class="filter-bar">
+                        <input type="text" class="search-input" id="searchInput" placeholder="Search cards...">
+                        <div class="filter-sep"></div>
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <div class="filter-sep"></div>
+                        <button class="filter-btn" data-filter="white" title="White">
+                            <span class="mana-pip W" style="width:14px;height:14px;font-size:0.5rem;display:inline-flex;">W</span>
+                        </button>
+                        <button class="filter-btn" data-filter="blue" title="Blue">
+                            <span class="mana-pip U" style="width:14px;height:14px;font-size:0.5rem;display:inline-flex;">U</span>
+                        </button>
+                        <button class="filter-btn" data-filter="black" title="Black">
+                            <span class="mana-pip B" style="width:14px;height:14px;font-size:0.5rem;display:inline-flex;">B</span>
+                        </button>
+                        <button class="filter-btn" data-filter="red" title="Red">
+                            <span class="mana-pip R" style="width:14px;height:14px;font-size:0.5rem;display:inline-flex;">R</span>
+                        </button>
+                        <button class="filter-btn" data-filter="green" title="Green">
+                            <span class="mana-pip G" style="width:14px;height:14px;font-size:0.5rem;display:inline-flex;">G</span>
+                        </button>
+                        <button class="filter-btn" data-filter="colorless" title="Colorless">
+                            <span class="mana-pip C" style="width:14px;height:14px;font-size:0.5rem;display:inline-flex;">C</span>
+                        </button>
+                        <div class="filter-sep"></div>
+                        <button class="filter-btn" data-rarity="common">Common</button>
+                        <button class="filter-btn" data-rarity="uncommon">Uncommon</button>
+                        <button class="filter-btn" data-rarity="rare">Rare</button>
+                        <button class="filter-btn" data-rarity="mythic">Mythic</button>
+                    </div>
+                    <div class="collection-grid" id="collectionGrid"></div>
+                </div>
+
+                <!-- Right: Deck -->
+                <div class="deck-panel">
+                    <div class="deck-header">
+                        <div class="deck-title">Your Deck</div>
+                        <div class="deck-count"><span id="deckCount">0</span> cards</div>
+                    </div>
+                    <div class="deck-actions">
+                        <button class="deck-action-btn" id="btnSave" title="Save deck">
+                            <i class="bi bi-floppy me-1"></i> Save
+                        </button>
+                        <button class="deck-action-btn" id="btnLoad" title="Load saved deck">
+                            <i class="bi bi-folder2-open me-1"></i> Load
+                        </button>
+                        <button class="deck-action-btn" id="btnExport" title="Copy deck list">
+                            <i class="bi bi-clipboard me-1"></i> Copy
+                        </button>
+                        <button class="deck-action-btn danger" id="btnClear" title="Clear deck">
+                            <i class="bi bi-trash3 me-1"></i> Clear
+                        </button>
+                    </div>
+                    <div class="deck-list" id="deckList">
+                        <div class="deck-empty">
+                            <i class="bi bi-stack"></i>
+                            Click cards to add them to your deck
+                        </div>
+                    </div>
+                    <div class="stats-section">
+                        <div class="stats-title">Mana Curve</div>
+                        <div class="mana-curve" id="manaCurve"></div>
+                        <div class="stats-title" style="margin-top: 0.75rem;">Colors</div>
+                        <div class="color-dist" id="colorDist"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <div class="container-fluid px-3 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-lightning-charge-fill" style="color: var(--accent);"></i>
+                    <span>Built autonomously by Claude Code</span>
+                </div>
+                <div>
+                    <span class="d-inline-flex align-items-center gap-1">
+                        <span style="width:6px;height:6px;background:#4ade80;border-radius:50%;display:inline-block;"></span>
+                        Deployed via GitHub Pages
+                    </span>
+                    &middot; Feb 2026
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- Card tooltip -->
+    <div class="card-tooltip" id="cardTooltip"></div>
+
+    <!-- Toast -->
+    <div class="toast-msg" id="toast"></div>
+
+    <!-- Save/Load modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box">
+            <button class="modal-close" id="modalClose"><i class="bi bi-x-lg"></i></button>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    (function() {
+        'use strict';
+
+        // ── State ──
+        let allCards = [];
+        let deck = {}; // { cardName: count }
+        let activeColorFilter = 'all';
+        let activeRarityFilter = null;
+        let searchTerm = '';
+
+        // ── DOM refs ──
+        const grid = document.getElementById('collectionGrid');
+        const deckList = document.getElementById('deckList');
+        const deckCountEl = document.getElementById('deckCount');
+        const manaCurveEl = document.getElementById('manaCurve');
+        const colorDistEl = document.getElementById('colorDist');
+        const tooltip = document.getElementById('cardTooltip');
+        const toast = document.getElementById('toast');
+        const modal = document.getElementById('modalOverlay');
+        const modalContent = document.getElementById('modalContent');
+
+        // ── Load cards ──
+        fetch('data/cards.json')
+            .then(r => r.json())
+            .then(cards => {
+                allCards = cards;
+                renderCollection();
+            });
+
+        // ── Parse mana cost into pips ──
+        function parseMana(cost) {
+            if (!cost) return [];
+            const pips = [];
+            const regex = /\{([^}]+)\}/g;
+            let m;
+            while ((m = regex.exec(cost)) !== null) {
+                pips.push(m[1]);
+            }
+            return pips;
+        }
+
+        function cmc(cost) {
+            const pips = parseMana(cost);
+            let total = 0;
+            for (const p of pips) {
+                if (p === 'X') total += 0;
+                else if (/^\d+$/.test(p)) total += parseInt(p);
+                else total += 1;
+            }
+            return total;
+        }
+
+        function renderManaPips(cost, small) {
+            const pips = parseMana(cost);
+            if (pips.length === 0) return '<span style="color:#555;font-size:0.65rem;">—</span>';
+            const size = small ? 'width:14px;height:14px;font-size:0.5rem;' : '';
+            return pips.map(p => {
+                let cls = 'C';
+                if ('WUBRG'.includes(p)) cls = p;
+                else if (p === 'X') cls = 'X';
+                return `<span class="mana-pip ${cls}" style="${size}">${p}</span>`;
+            }).join('');
+        }
+
+        // ── Filter logic ──
+        function cardMatchesFilter(card) {
+            if (activeColorFilter !== 'all') {
+                if (activeColorFilter === 'colorless') {
+                    if (card.colors.length > 0) return false;
+                } else {
+                    if (!card.colors.includes(activeColorFilter)) return false;
+                }
+            }
+            if (activeRarityFilter && card.rarity !== activeRarityFilter) return false;
+            if (searchTerm) {
+                const s = searchTerm.toLowerCase();
+                if (!card.name.toLowerCase().includes(s) &&
+                    !card.type.toLowerCase().includes(s) &&
+                    !(card.subtype && card.subtype.toLowerCase().includes(s)) &&
+                    !(card.text && card.text.toLowerCase().includes(s))) return false;
+            }
+            return true;
+        }
+
+        // ── Render collection ──
+        function renderCollection() {
+            const filtered = allCards.filter(cardMatchesFilter);
+            grid.innerHTML = filtered.length === 0
+                ? '<div style="grid-column:1/-1;text-align:center;color:#555;padding:3rem;">No cards match your filters.</div>'
+                : filtered.map(card => {
+                    const count = deck[card.name] || 0;
+                    const inDeck = count > 0;
+                    return `
+                        <div class="mini-card ${inDeck ? 'in-deck' : ''}"
+                             data-card="${encodeURIComponent(card.name)}"
+                             onmouseenter="window._showTooltip(event, '${encodeURIComponent(card.name)}')"
+                             onmousemove="window._moveTooltip(event)"
+                             onmouseleave="window._hideTooltip()">
+                            ${inDeck ? `<span class="mini-card-count">${count}</span>` : ''}
+                            <div class="mini-card-name">${card.name}</div>
+                            <div class="mini-card-info">
+                                <span class="rarity-dot ${card.rarity}"></span>
+                                <span class="mini-card-cost">${renderManaPips(card.manaCost, true)}</span>
+                            </div>
+                            <div class="mini-card-type">${card.type}${card.subtype ? ' — ' + card.subtype : ''}</div>
+                        </div>`;
+                }).join('');
+
+            // Click handlers
+            grid.querySelectorAll('.mini-card').forEach(el => {
+                el.addEventListener('click', () => {
+                    const name = decodeURIComponent(el.dataset.card);
+                    addToDeck(name);
+                });
+            });
+        }
+
+        // ── Tooltip ──
+        window._showTooltip = function(e, encodedName) {
+            const name = decodeURIComponent(encodedName);
+            const card = allCards.find(c => c.name === name);
+            if (!card) return;
+            tooltip.innerHTML = `
+                <div class="tooltip-name">${card.name}</div>
+                <div class="tooltip-type">${card.type}${card.subtype ? ' — ' + card.subtype : ''} · ${card.rarity}</div>
+                <div class="tooltip-text">${(card.text || '').replace(/\n/g, '<br>')}</div>
+                ${card.flavorText ? `<div class="tooltip-flavor">${card.flavorText}</div>` : ''}
+                ${card.power !== null ? `<div class="tooltip-stats">${card.power}/${card.toughness}</div>` : ''}
+            `;
+            tooltip.classList.add('visible');
+        };
+        window._moveTooltip = function(e) {
+            let x = e.clientX + 16;
+            let y = e.clientY + 12;
+            if (x + 270 > window.innerWidth) x = e.clientX - 276;
+            if (y + 200 > window.innerHeight) y = e.clientY - 200;
+            tooltip.style.left = x + 'px';
+            tooltip.style.top = y + 'px';
+        };
+        window._hideTooltip = function() {
+            tooltip.classList.remove('visible');
+        };
+
+        // ── Deck operations ──
+        function addToDeck(name) {
+            const card = allCards.find(c => c.name === name);
+            if (!card) return;
+            const max = card.rarity === 'mythic' || card.type.includes('Legendary') ? 1 : 4;
+            if ((deck[name] || 0) >= max) {
+                showToast(`Maximum ${max} copies of ${name}`);
+                return;
+            }
+            deck[name] = (deck[name] || 0) + 1;
+            renderDeck();
+            renderCollection();
+        }
+
+        function removeFromDeck(name) {
+            if (!deck[name]) return;
+            deck[name]--;
+            if (deck[name] <= 0) delete deck[name];
+            renderDeck();
+            renderCollection();
+        }
+
+        function clearDeck() {
+            deck = {};
+            renderDeck();
+            renderCollection();
+            showToast('Deck cleared');
+        }
+
+        function getDeckTotal() {
+            return Object.values(deck).reduce((a, b) => a + b, 0);
+        }
+
+        // ── Render deck list ──
+        function renderDeck() {
+            const total = getDeckTotal();
+            deckCountEl.textContent = total;
+
+            if (total === 0) {
+                deckList.innerHTML = '<div class="deck-empty"><i class="bi bi-stack"></i>Click cards to add them to your deck</div>';
+                renderStats();
+                return;
+            }
+
+            // Sort by CMC then name
+            const entries = Object.keys(deck).map(name => {
+                const card = allCards.find(c => c.name === name);
+                return { name, count: deck[name], card };
+            }).sort((a, b) => {
+                const cmcA = a.card ? cmc(a.card.manaCost) : 0;
+                const cmcB = b.card ? cmc(b.card.manaCost) : 0;
+                if (cmcA !== cmcB) return cmcA - cmcB;
+                return a.name.localeCompare(b.name);
+            });
+
+            deckList.innerHTML = entries.map(e => `
+                <div class="deck-entry" data-card="${encodeURIComponent(e.name)}"
+                     onmouseenter="window._showTooltip(event, '${encodeURIComponent(e.name)}')"
+                     onmousemove="window._moveTooltip(event)"
+                     onmouseleave="window._hideTooltip()">
+                    <span class="deck-entry-qty">${e.count}x</span>
+                    <span class="deck-entry-name">${e.name}</span>
+                    <span class="deck-entry-cost">${e.card ? renderManaPips(e.card.manaCost, true) : ''}</span>
+                    <span class="deck-entry-remove"><i class="bi bi-x-circle-fill"></i></span>
+                </div>
+            `).join('');
+
+            // Click to remove
+            deckList.querySelectorAll('.deck-entry').forEach(el => {
+                el.querySelector('.deck-entry-remove').addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    removeFromDeck(decodeURIComponent(el.dataset.card));
+                });
+                el.addEventListener('click', () => {
+                    addToDeck(decodeURIComponent(el.dataset.card));
+                });
+            });
+
+            renderStats();
+        }
+
+        // ── Stats ──
+        function renderStats() {
+            // Mana curve
+            const curveBuckets = [0, 0, 0, 0, 0, 0, 0, 0]; // 0,1,2,3,4,5,6,7+
+            const colorCounts = { W: 0, U: 0, B: 0, R: 0, G: 0, C: 0 };
+
+            for (const [name, count] of Object.entries(deck)) {
+                const card = allCards.find(c => c.name === name);
+                if (!card) continue;
+                const cost = cmc(card.manaCost);
+                const bucket = Math.min(cost, 7);
+                curveBuckets[bucket] += count;
+
+                // Color counting
+                if (card.colors.length === 0) {
+                    colorCounts.C += count;
+                } else {
+                    for (const c of card.colors) {
+                        const key = { white: 'W', blue: 'U', black: 'B', red: 'R', green: 'G' }[c];
+                        if (key) colorCounts[key] += count;
+                    }
+                }
+            }
+
+            const maxBucket = Math.max(...curveBuckets, 1);
+            manaCurveEl.innerHTML = curveBuckets.map((count, i) => {
+                const h = Math.round((count / maxBucket) * 50);
+                const label = i === 7 ? '7+' : i;
+                return `
+                    <div class="curve-bar-wrap">
+                        <span class="curve-count">${count || ''}</span>
+                        <div class="curve-bar" style="height:${Math.max(h, 2)}px;"></div>
+                        <span class="curve-label">${label}</span>
+                    </div>`;
+            }).join('');
+
+            // Color distribution
+            const colorMap = {
+                W: { name: 'White', color: 'var(--color-white)' },
+                U: { name: 'Blue', color: 'var(--color-blue)' },
+                B: { name: 'Black', color: 'var(--color-black)' },
+                R: { name: 'Red', color: 'var(--color-red)' },
+                G: { name: 'Green', color: 'var(--color-green)' },
+                C: { name: 'Colorless', color: 'var(--color-colorless)' },
+            };
+            const activeColors = Object.entries(colorCounts).filter(([_, v]) => v > 0);
+            colorDistEl.innerHTML = activeColors.length === 0
+                ? '<span style="color:#555;font-size:0.75rem;">No cards yet</span>'
+                : activeColors.map(([key, count]) => `
+                    <span class="color-chip">
+                        <span class="color-chip-dot" style="background:${colorMap[key].color};${key === 'B' ? 'border:1px solid #666;' : ''}"></span>
+                        ${colorMap[key].name} (${count})
+                    </span>
+                `).join('');
+        }
+
+        // ── Filters ──
+        document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeColorFilter = btn.dataset.filter;
+                renderCollection();
+            });
+        });
+
+        document.querySelectorAll('.filter-btn[data-rarity]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const wasActive = btn.classList.contains('active');
+                document.querySelectorAll('.filter-btn[data-rarity]').forEach(b => b.classList.remove('active'));
+                if (wasActive) {
+                    activeRarityFilter = null;
+                } else {
+                    btn.classList.add('active');
+                    activeRarityFilter = btn.dataset.rarity;
+                }
+                renderCollection();
+            });
+        });
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            renderCollection();
+        });
+
+        // ── Actions ──
+        document.getElementById('btnClear').addEventListener('click', clearDeck);
+
+        document.getElementById('btnExport').addEventListener('click', () => {
+            if (getDeckTotal() === 0) { showToast('Deck is empty'); return; }
+            const lines = Object.entries(deck)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([name, count]) => `${count}x ${name}`);
+            const text = lines.join('\n');
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Deck list copied to clipboard!');
+            }).catch(() => {
+                showToast('Failed to copy');
+            });
+        });
+
+        // ── Save/Load with localStorage ──
+        const STORAGE_KEY = 'ccc-saved-decks';
+
+        function getSavedDecks() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; }
+        }
+        function setSavedDecks(decks) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(decks));
+        }
+
+        document.getElementById('btnSave').addEventListener('click', () => {
+            if (getDeckTotal() === 0) { showToast('Deck is empty'); return; }
+            modalContent.innerHTML = `
+                <div class="modal-title">Save Deck</div>
+                <div class="save-input-row">
+                    <input type="text" class="save-input" id="saveName" placeholder="Deck name..." maxlength="40">
+                    <button class="btn btn-sm btn-accent" id="saveConfirm">Save</button>
+                </div>
+            `;
+            modal.classList.add('active');
+            setTimeout(() => document.getElementById('saveName').focus(), 100);
+            document.getElementById('saveConfirm').addEventListener('click', () => {
+                const name = document.getElementById('saveName').value.trim();
+                if (!name) { showToast('Enter a deck name'); return; }
+                const decks = getSavedDecks();
+                decks[name] = { ...deck };
+                setSavedDecks(decks);
+                modal.classList.remove('active');
+                showToast(`Deck "${name}" saved!`);
+            });
+        });
+
+        document.getElementById('btnLoad').addEventListener('click', () => {
+            const decks = getSavedDecks();
+            const names = Object.keys(decks);
+            modalContent.innerHTML = `
+                <div class="modal-title">Saved Decks</div>
+                ${names.length === 0 ? '<div class="no-saved">No saved decks yet.</div>' :
+                    names.map(n => {
+                        const total = Object.values(decks[n]).reduce((a, b) => a + b, 0);
+                        return `
+                            <div class="saved-deck-item" data-deck="${encodeURIComponent(n)}">
+                                <div>
+                                    <div class="saved-deck-name">${n}</div>
+                                    <div class="saved-deck-info">${total} cards</div>
+                                </div>
+                                <button class="saved-deck-delete" data-delete="${encodeURIComponent(n)}" title="Delete"><i class="bi bi-trash3"></i></button>
+                            </div>`;
+                    }).join('')}
+            `;
+            modal.classList.add('active');
+
+            // Load handlers
+            modalContent.querySelectorAll('.saved-deck-item').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    if (e.target.closest('.saved-deck-delete')) return;
+                    const n = decodeURIComponent(el.dataset.deck);
+                    deck = { ...decks[n] };
+                    renderDeck();
+                    renderCollection();
+                    modal.classList.remove('active');
+                    showToast(`Loaded "${n}"`);
+                });
+            });
+
+            // Delete handlers
+            modalContent.querySelectorAll('.saved-deck-delete').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const n = decodeURIComponent(btn.dataset.delete);
+                    delete decks[n];
+                    setSavedDecks(decks);
+                    document.getElementById('btnLoad').click(); // re-render
+                    showToast(`Deleted "${n}"`);
+                });
+            });
+        });
+
+        // Modal close
+        document.getElementById('modalClose').addEventListener('click', () => modal.classList.remove('active'));
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
+
+        // ── Toast ──
+        let toastTimer;
+        function showToast(msg) {
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // ── Theme toggle ──
+        const root = document.documentElement;
+        const toggle = document.getElementById('themeToggle');
+        const stored = localStorage.getItem('theme');
+        if (stored) root.setAttribute('data-bs-theme', stored);
+        toggle.addEventListener('click', () => {
+            const next = root.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-bs-theme', next);
+            localStorage.setItem('theme', next);
+        });
+
+        // ── Initialize stats ──
+        renderStats();
+    })();
+    </script>
+</body>
+</html>
