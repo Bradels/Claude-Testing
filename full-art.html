@@ -65,6 +65,12 @@
             margin: 0 auto;
         }
 
+        /* ── 3D tilt anchor ── */
+        .fa-anchor {
+            perspective: 1000px;
+            width: 300px; height: 420px;
+        }
+
         /* ── Full-art card ── */
         .fa-card {
             width: 300px;
@@ -72,13 +78,16 @@
             border-radius: 18px;
             position: relative;
             overflow: hidden;
-            cursor: default;
-            transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s;
+            cursor: grab;
+            transform-style: preserve-3d;
+            transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+            transition: transform 0.15s ease-out, box-shadow 0.3s;
             box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            will-change: transform;
         }
-        .fa-card:hover {
-            transform: translateY(-12px) scale(1.02);
-            box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+        .fa-card:active { cursor: grabbing; }
+        .fa-card.spring-back {
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s;
         }
 
         /* Background art — fills entire card */
@@ -198,6 +207,88 @@
             text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
 
+        /* ══════════════════════════════════════
+           HOLOGRAPHIC FOIL + GLARE + SPARKLES
+        ══════════════════════════════════════ */
+        .fa-holo {
+            position: absolute; inset: 0; z-index: 8;
+            border-radius: 18px; overflow: hidden;
+            pointer-events: none; opacity: 0;
+            mix-blend-mode: color-dodge;
+            transition: opacity 0.3s;
+        }
+        .fa-card:hover .fa-holo { opacity: 0.7; }
+
+        /* Rainbow conic gradient follows mouse */
+        .fa-holo::before {
+            content: '';
+            position: absolute; width: 250%; height: 250%;
+            left: calc(var(--mx, 50%) - 125%);
+            top: calc(var(--my, 50%) - 125%);
+            background: conic-gradient(
+                from 0deg at 50% 50%,
+                rgba(255,50,50,0.18) 0deg,
+                rgba(255,180,50,0.15) 45deg,
+                rgba(255,255,80,0.15) 90deg,
+                rgba(80,255,100,0.15) 135deg,
+                rgba(80,200,255,0.18) 180deg,
+                rgba(120,80,255,0.18) 225deg,
+                rgba(255,80,200,0.15) 270deg,
+                rgba(255,50,50,0.18) 360deg
+            );
+            filter: blur(25px);
+        }
+
+        /* Fine shimmer lines */
+        .fa-holo::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: repeating-linear-gradient(
+                110deg,
+                transparent 0px, transparent 2px,
+                rgba(255,255,255,0.04) 2px, rgba(255,255,255,0.04) 3px
+            );
+        }
+
+        /* Glare spotlight */
+        .fa-glare {
+            position: absolute; inset: 0; z-index: 9;
+            border-radius: 18px; overflow: hidden;
+            pointer-events: none; opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .fa-card:hover .fa-glare { opacity: 1; }
+        .fa-glare::before {
+            content: '';
+            position: absolute;
+            width: 220px; height: 220px;
+            left: calc(var(--mx, 50%) - 110px);
+            top: calc(var(--my, 50%) - 110px);
+            background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 55%);
+            filter: blur(8px);
+        }
+
+        /* Sparkles for mythics */
+        .fa-sparkles {
+            position: absolute; inset: 0; z-index: 9;
+            border-radius: 18px; pointer-events: none; overflow: hidden;
+        }
+        .fa-sparkle {
+            position: absolute; width: 3px; height: 3px;
+            background: #fff; border-radius: 50%;
+            opacity: 0;
+            animation: faSpark 2.5s ease-in-out infinite;
+        }
+        @keyframes faSpark {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 0.9; transform: scale(1.2); }
+        }
+
+        /* Foil intensity per rarity */
+        .foil-uncommon:hover .fa-holo { opacity: 0.35; }
+        .foil-rare:hover .fa-holo { opacity: 0.65; }
+        .foil-mythic:hover .fa-holo { opacity: 1; }
+
         /* ── Rarity border glow ── */
         .fa-card.rarity-rare {
             border: 2px solid rgba(232,200,74,0.25);
@@ -225,16 +316,13 @@
             transform: rotate(45deg);
         }
 
-        /* ── Entrance animation ── */
-        .fa-card {
+        /* ── Entrance animation (on anchor, not card — preserve 3D tilt) ── */
+        .fa-anchor {
             opacity: 0; transform: translateY(30px);
         }
-        .fa-card.visible {
+        .fa-anchor.visible {
             opacity: 1; transform: translateY(0);
-            transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.4s;
-        }
-        .fa-card.visible:hover {
-            transform: translateY(-12px) scale(1.02);
+            transition: opacity 0.6s ease, transform 0.6s ease;
         }
 
         /* ── Light theme ── */
@@ -250,10 +338,13 @@
         [data-bs-theme="light"] .theme-toggle .bi-moon-stars-fill { display: none; }
         [data-bs-theme="light"] .btn-outline-accent { color: var(--accent-dark); }
         [data-bs-theme="light"] footer { border-top-color: rgba(0,0,0,0.06); color: #999; }
+        [data-bs-theme="light"] .fa-holo { mix-blend-mode: overlay; }
 
         @media (prefers-reduced-motion: reduce) {
             .orb { animation: none !important; }
-            .fa-card { opacity: 1; transform: none; }
+            .fa-anchor { opacity: 1; transform: none; }
+            .fa-card { transition: none !important; }
+            .fa-sparkle { animation: none !important; }
         }
 
         @media (max-width: 700px) {
@@ -261,7 +352,7 @@
                 grid-template-columns: 1fr;
                 padding: 2rem 1.5rem 4rem;
             }
-            .fa-card {
+            .fa-anchor, .fa-card {
                 width: 100%; max-width: 320px;
                 height: auto; aspect-ratio: 63 / 88;
                 margin: 0 auto;
@@ -368,12 +459,31 @@
             const gemClass = `gem-${card.rarity}`;
             const rarityBorder = (card.rarity === 'mythic' || card.rarity === 'rare')
                 ? `rarity-${card.rarity}` : '';
+            const foilClass = `foil-${card.rarity}`;
 
-            const el = document.createElement('div');
-            el.className = `fa-card ${rarityBorder}`;
-            el.style.transitionDelay = `${idx * 0.08}s`;
+            // Sparkles HTML for mythics
+            let sparklesHtml = '';
+            if (card.rarity === 'mythic') {
+                sparklesHtml = '<div class="fa-sparkles">';
+                for (let i = 0; i < 18; i++) {
+                    const x = Math.random() * 100;
+                    const y = Math.random() * 100;
+                    const delay = (Math.random() * 3).toFixed(1);
+                    const dur = (2 + Math.random() * 1.5).toFixed(1);
+                    sparklesHtml += `<div class="fa-sparkle" style="left:${x}%;top:${y}%;animation-delay:${delay}s;animation-duration:${dur}s;"></div>`;
+                }
+                sparklesHtml += '</div>';
+            }
 
-            el.innerHTML = `
+            // Anchor wraps the card for perspective
+            const anchor = document.createElement('div');
+            anchor.className = 'fa-anchor';
+            anchor.style.transitionDelay = `${idx * 0.08}s`;
+
+            const cardEl = document.createElement('div');
+            cardEl.className = `fa-card ${rarityBorder} ${foilClass}`;
+
+            cardEl.innerHTML = `
                 <div class="fa-art" style="background-image: url('images/${card.art}.jpg')"></div>
                 <div class="fa-bottom-grad"></div>
                 <div class="fa-stamp">Full Art</div>
@@ -395,9 +505,57 @@
                 </div>
 
                 ${pt}
+                <div class="fa-holo"></div>
+                <div class="fa-glare"></div>
+                ${sparklesHtml}
             `;
 
-            return el;
+            anchor.appendChild(cardEl);
+
+            // ── 3D tilt mouse tracking ──
+            anchor.addEventListener('mousemove', (e) => {
+                const rect = anchor.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const nx = (x / rect.width) - 0.5;   // -0.5 to 0.5
+                const ny = (y / rect.height) - 0.5;
+
+                cardEl.classList.remove('spring-back');
+                cardEl.style.setProperty('--rx', (ny * -20) + 'deg');
+                cardEl.style.setProperty('--ry', (nx * 25) + 'deg');
+                cardEl.style.setProperty('--mx', x + 'px');
+                cardEl.style.setProperty('--my', y + 'px');
+            });
+
+            anchor.addEventListener('mouseleave', () => {
+                cardEl.classList.add('spring-back');
+                cardEl.style.setProperty('--rx', '0deg');
+                cardEl.style.setProperty('--ry', '0deg');
+            });
+
+            // Touch support
+            anchor.addEventListener('touchmove', (e) => {
+                const t = e.touches[0];
+                const rect = anchor.getBoundingClientRect();
+                const x = t.clientX - rect.left;
+                const y = t.clientY - rect.top;
+                const nx = (x / rect.width) - 0.5;
+                const ny = (y / rect.height) - 0.5;
+
+                cardEl.classList.remove('spring-back');
+                cardEl.style.setProperty('--rx', (ny * -20) + 'deg');
+                cardEl.style.setProperty('--ry', (nx * 25) + 'deg');
+                cardEl.style.setProperty('--mx', x + 'px');
+                cardEl.style.setProperty('--my', y + 'px');
+            }, { passive: true });
+
+            anchor.addEventListener('touchend', () => {
+                cardEl.classList.add('spring-back');
+                cardEl.style.setProperty('--rx', '0deg');
+                cardEl.style.setProperty('--ry', '0deg');
+            });
+
+            return anchor;
         }
 
         // ── Scroll reveal ──
@@ -416,13 +574,12 @@
                 const allCards = await res.json();
                 const grid = document.getElementById('fullartGrid');
 
-                // Render in the curated order
                 FULL_ART_PICKS.forEach((art, idx) => {
                     const card = allCards.find(c => c.art === art);
                     if (card) {
-                        const el = renderFullArt(card, idx);
-                        grid.appendChild(el);
-                        observer.observe(el);
+                        const anchor = renderFullArt(card, idx);
+                        grid.appendChild(anchor);
+                        observer.observe(anchor);
                     }
                 });
 
