@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Showcase — Claude Code Cloud</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #d4a574;
+            --accent-light: #e8c9a0;
+            --accent-dark: #b8875a;
+            /* Dynamic mouse position for holo effect */
+            --mx: 50%;
+            --my: 50%;
+            --rx: 0deg;
+            --ry: 0deg;
+        }
+
+        body { background: #060609; overflow-x: hidden; min-height: 100vh; }
+
+        /* ── Orbs ── */
+        .orb { position: fixed; border-radius: 50%; filter: blur(120px); opacity: 0.10; pointer-events: none; z-index: 0; }
+        .orb-1 { width: 600px; height: 600px; background: #7c6ce0; top: -200px; right: -150px; animation: f1 22s ease-in-out infinite; }
+        .orb-2 { width: 500px; height: 500px; background: var(--accent); bottom: -150px; left: -120px; animation: f2 18s ease-in-out infinite; }
+        @keyframes f1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-60px,80px)} }
+        @keyframes f2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(50px,-60px)} }
+
+        .content-wrapper { position: relative; z-index: 1; }
+
+        /* ── Shared nav/button styles ── */
+        .theme-toggle {
+            width: 40px; height: 40px; border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05);
+            color: var(--accent-light); display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; cursor: pointer; transition: background 0.3s, border-color 0.3s, transform 0.3s;
+        }
+        .theme-toggle:hover { background: rgba(255,255,255,0.1); border-color: var(--accent); transform: scale(1.05); }
+        .theme-toggle .bi-sun-fill { display: none; }
+        .theme-toggle .bi-moon-stars-fill { display: inline; }
+        .btn-outline-accent {
+            border: 1px solid rgba(212,165,116,0.4); color: var(--accent-light);
+            padding: 0.5rem 1.25rem; font-weight: 600; border-radius: 10px; font-size: 0.85rem;
+            background: transparent; transition: background 0.2s, border-color 0.2s;
+        }
+        .btn-outline-accent:hover { background: rgba(212,165,116,0.08); border-color: var(--accent); color: var(--accent-light); }
+
+        /* ══════════════════════════════════════
+           SHOWCASE LAYOUT
+        ══════════════════════════════════════ */
+        .showcase-wrap {
+            display: flex; flex-direction: column; align-items: center;
+            padding: 7rem 1rem 3rem; min-height: 100vh;
+        }
+        .showcase-title {
+            font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 800;
+            letter-spacing: -0.02em; text-align: center; margin-bottom: 0.25rem;
+        }
+        .showcase-sub { color: #666; font-size: 0.9rem; text-align: center; margin-bottom: 2rem; }
+
+        /* Main stage: card + info panel */
+        .stage {
+            display: flex; align-items: center; justify-content: center;
+            gap: 3rem; flex-wrap: wrap; margin-bottom: 2.5rem;
+        }
+
+        /* ══════════════════════════════════════
+           3D TILT CARD
+        ══════════════════════════════════════ */
+        .tilt-anchor {
+            perspective: 1200px;
+            width: 315px; height: 440px; /* 63:88 ratio scaled up */
+        }
+
+        .tilt-card {
+            width: 100%; height: 100%;
+            position: relative; border-radius: 20px;
+            transform-style: preserve-3d;
+            transform: rotateX(var(--rx)) rotateY(var(--ry));
+            transition: transform 0.12s ease-out, box-shadow 0.3s;
+            cursor: grab;
+            will-change: transform;
+        }
+        .tilt-card:active { cursor: grabbing; }
+
+        /* ── Card face ── */
+        .tilt-card-face {
+            position: absolute; inset: 0;
+            border-radius: 20px; overflow: hidden;
+            background: linear-gradient(135deg, #e8dfc8, #d8ccb0, #e4d9c2);
+            padding: 10px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .tilt-card-frame {
+            border-radius: 12px; background: #c8bfa8;
+            border: 1px solid rgba(0,0,0,0.12); overflow: hidden;
+            height: 100%; display: flex; flex-direction: column;
+        }
+        .tc-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 10px 7px; background: rgba(255,255,255,0.45);
+            border-radius: 8px 8px 0 0; min-height: 36px;
+            border-bottom: 1px solid rgba(0,0,0,0.1); flex-shrink: 0;
+        }
+        .tc-name {
+            font-size: 0.95rem; font-weight: 700; color: #1a1a1a;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            flex: 1; margin-right: 8px;
+        }
+        .tc-mana { display: flex; gap: 3px; flex-shrink: 0; }
+        .mana-pip {
+            width: 20px; height: 20px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem; font-weight: 800; color: #111;
+            border: 1px solid rgba(0,0,0,0.3);
+        }
+        .mana-pip.W { background: linear-gradient(135deg, #f9f5e3, #e8dfc0); }
+        .mana-pip.U { background: linear-gradient(135deg, #4aa4d4, #1a6bc4); color: #fff; }
+        .mana-pip.B { background: linear-gradient(135deg, #555, #222); color: #ccc; }
+        .mana-pip.R { background: linear-gradient(135deg, #e86040, #c4351e); color: #fff; }
+        .mana-pip.G { background: linear-gradient(135deg, #4aad5a, #2a7c3a); color: #fff; }
+        .mana-pip.C { background: linear-gradient(135deg, #bbb, #888); }
+        .mana-pip.X { background: linear-gradient(135deg, #bbb, #888); }
+        .mana-pip.generic { background: linear-gradient(135deg, #d0d0d0, #999); }
+
+        .tc-art {
+            height: 170px; margin: 5px 7px; border-radius: 5px;
+            overflow: hidden; flex-shrink: 0;
+        }
+        .tc-art-inner {
+            width: 100%; height: 100%;
+            background-size: cover; background-position: center;
+        }
+
+        .tc-type {
+            padding: 5px 10px; font-size: 0.78rem; font-weight: 600;
+            color: #1a1a1a; background: rgba(255,255,255,0.4);
+            border-top: 1px solid rgba(0,0,0,0.1);
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            flex-shrink: 0; position: relative;
+        }
+        .tc-rarity-gem {
+            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+            width: 12px; height: 12px; border-radius: 50%;
+            border: 1px solid rgba(0,0,0,0.3);
+        }
+        .gem-common { background: #111; }
+        .gem-uncommon { background: linear-gradient(135deg, #7a8a9a, #c0ccd8); }
+        .gem-rare { background: linear-gradient(135deg, #c9a43c, #e8c84a); }
+        .gem-mythic { background: linear-gradient(135deg, #e85a20, #f08030); }
+
+        .tc-text {
+            padding: 10px; flex: 1; background: rgba(255,255,255,0.35);
+            border-radius: 0 0 8px 8px; overflow-y: auto; position: relative;
+        }
+        .tc-rules { font-size: 0.78rem; line-height: 1.5; color: #1a1a1a; }
+        .tc-rules p { margin-bottom: 0.3rem; }
+        .tc-rules p:last-child { margin-bottom: 0; }
+        .tc-flavor {
+            font-size: 0.72rem; font-style: italic; color: #4a4a4a;
+            border-top: 1px solid rgba(0,0,0,0.12); padding-top: 0.4rem;
+            margin-top: 0.3rem; line-height: 1.4;
+        }
+        .tc-pt {
+            position: absolute; bottom: 8px; right: 8px;
+            background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.15);
+            border-radius: 6px; padding: 2px 10px;
+            font-size: 0.9rem; font-weight: 800; color: #1a1a1a;
+        }
+
+        /* ══════════════════════════════════════
+           HOLOGRAPHIC FOIL OVERLAY
+        ══════════════════════════════════════ */
+        .holo-foil {
+            position: absolute; inset: 0; z-index: 5;
+            border-radius: 20px; overflow: hidden;
+            pointer-events: none; opacity: 0;
+            transition: opacity 0.3s;
+            mix-blend-mode: color-dodge;
+        }
+        .tilt-card:hover .holo-foil,
+        .tilt-card.touching .holo-foil { opacity: 1; }
+
+        /* Rainbow gradient that follows the mouse */
+        .holo-foil::before {
+            content: '';
+            position: absolute;
+            width: 200%; height: 200%;
+            left: calc(var(--mx) - 100%);
+            top: calc(var(--my) - 100%);
+            background: conic-gradient(
+                from 0deg at 50% 50%,
+                rgba(255,0,0,0.15) 0deg,
+                rgba(255,165,0,0.15) 60deg,
+                rgba(255,255,0,0.12) 120deg,
+                rgba(0,255,0,0.12) 180deg,
+                rgba(0,100,255,0.15) 240deg,
+                rgba(128,0,255,0.15) 300deg,
+                rgba(255,0,0,0.15) 360deg
+            );
+            filter: blur(30px);
+        }
+
+        /* Shimmer streaks */
+        .holo-foil::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: repeating-linear-gradient(
+                115deg,
+                transparent 0px, transparent 3px,
+                rgba(255,255,255,0.03) 3px, rgba(255,255,255,0.03) 4px
+            );
+        }
+
+        /* ── Glare / Light spot ── */
+        .glare {
+            position: absolute; inset: 0; z-index: 6;
+            border-radius: 20px; overflow: hidden;
+            pointer-events: none; opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tilt-card:hover .glare,
+        .tilt-card.touching .glare { opacity: 1; }
+
+        .glare::before {
+            content: '';
+            position: absolute;
+            width: 250px; height: 250px;
+            left: calc(var(--mx) - 125px);
+            top: calc(var(--my) - 125px);
+            background: radial-gradient(circle, rgba(255,255,255,0.20) 0%, transparent 60%);
+            filter: blur(10px);
+        }
+
+        /* ── Sparkle layer for mythics ── */
+        .sparkle-layer {
+            position: absolute; inset: 0; z-index: 7;
+            border-radius: 20px; pointer-events: none;
+            overflow: hidden;
+        }
+        .sparkle {
+            position: absolute; width: 4px; height: 4px;
+            background: #fff; border-radius: 50%;
+            opacity: 0;
+            animation: sparkleAnim 2s ease-in-out infinite;
+        }
+        @keyframes sparkleAnim {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 0.8; transform: scale(1); }
+        }
+
+        /* ── Foil intensity per rarity ── */
+        .foil-uncommon .holo-foil { opacity: 0; }
+        .foil-uncommon:hover .holo-foil { opacity: 0.5; }
+        .foil-rare .holo-foil::before { filter: blur(25px); }
+        .foil-rare:hover .holo-foil { opacity: 0.8; }
+        .foil-mythic .holo-foil::before { filter: blur(20px); }
+        .foil-mythic:hover .holo-foil { opacity: 1; }
+
+        /* ══════════════════════════════════════
+           INFO PANEL
+        ══════════════════════════════════════ */
+        .info-panel {
+            width: 300px; max-width: 100%;
+        }
+        .info-card-name {
+            font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em;
+            margin-bottom: 0.15rem;
+        }
+        .info-type { color: #888; font-size: 0.9rem; margin-bottom: 1rem; }
+
+        .info-stats {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+        .info-stat {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px; padding: 0.6rem 0.75rem;
+        }
+        .info-stat-label { font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 0.05em; }
+        .info-stat-value { font-size: 1rem; font-weight: 700; color: var(--accent-light); margin-top: 0.1rem; }
+
+        .info-flavor {
+            font-style: italic; color: #888; font-size: 0.85rem;
+            line-height: 1.6; border-left: 3px solid rgba(212,165,116,0.3);
+            padding-left: 1rem; margin-bottom: 1.25rem;
+        }
+
+        .info-colors { display: flex; gap: 0.4rem; margin-bottom: 1.25rem; }
+        .color-dot {
+            width: 28px; height: 28px; border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        .color-dot.c-white { background: linear-gradient(135deg, #f9f5e3, #e8dfc0); }
+        .color-dot.c-blue { background: linear-gradient(135deg, #4aa4d4, #1a6bc4); }
+        .color-dot.c-black { background: linear-gradient(135deg, #555, #222); }
+        .color-dot.c-red { background: linear-gradient(135deg, #e86040, #c4351e); }
+        .color-dot.c-green { background: linear-gradient(135deg, #4aad5a, #2a7c3a); }
+
+        .info-set {
+            font-size: 0.75rem; color: #555; text-transform: uppercase;
+            letter-spacing: 0.08em; font-weight: 600;
+        }
+
+        /* ══════════════════════════════════════
+           CARD CAROUSEL / THUMBNAILS
+        ══════════════════════════════════════ */
+        .carousel-strip {
+            display: flex; gap: 0.5rem; padding: 0.75rem 1rem;
+            overflow-x: auto; max-width: 900px; width: 100%;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(212,165,116,0.2) transparent;
+        }
+        .carousel-strip::-webkit-scrollbar { height: 4px; }
+        .carousel-strip::-webkit-scrollbar-thumb { background: rgba(212,165,116,0.2); border-radius: 99px; }
+
+        .thumb {
+            width: 52px; height: 73px; border-radius: 6px;
+            flex-shrink: 0; cursor: pointer;
+            border: 2px solid transparent;
+            background-size: cover; background-position: center;
+            opacity: 0.5; transition: opacity 0.2s, border-color 0.3s, transform 0.2s;
+        }
+        .thumb:hover { opacity: 0.8; transform: translateY(-2px); }
+        .thumb.active {
+            opacity: 1; border-color: var(--accent);
+            box-shadow: 0 0 12px rgba(212,165,116,0.3);
+        }
+
+        .nav-arrows {
+            display: flex; gap: 0.75rem; margin-bottom: 1rem;
+        }
+        .nav-arrow {
+            width: 42px; height: 42px; border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04);
+            color: #999; display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; cursor: pointer; transition: all 0.2s;
+        }
+        .nav-arrow:hover { background: rgba(255,255,255,0.08); border-color: var(--accent); color: var(--accent-light); }
+
+        .card-counter {
+            font-size: 0.8rem; color: #555; text-align: center; margin-top: 0.5rem;
+        }
+
+        /* ── Art images ── */
+        .art-architect { background-image: url('images/architect.jpg'); }
+        .art-injection { background-image: url('images/injection.jpg'); }
+        .art-recursion { background-image: url('images/recursion.jpg'); }
+        .art-overflow { background-image: url('images/overflow.jpg'); }
+        .art-conflict { background-image: url('images/conflict.jpg'); }
+        .art-generator { background-image: url('images/generator.jpg'); }
+        .art-null { background-image: url('images/null.jpg'); }
+        .art-sandbox { background-image: url('images/sandbox.jpg'); }
+        .art-hydra { background-image: url('images/hydra.jpg'); }
+        .art-duck { background-image: url('images/duck.jpg'); }
+        .art-push { background-image: url('images/push.jpg'); }
+        .art-loop { background-image: url('images/loop.jpg'); }
+        .art-tea-token { background-image: url('images/tea-token.jpg'); }
+        .art-tea-garden { background-image: url('images/tea-garden.jpg'); }
+        .art-greenhouse { background-image: url('images/greenhouse.jpg'); }
+        .art-zen-garden { background-image: url('images/zen-garden.jpg'); }
+        .art-the-mansion { background-image: url('images/the-mansion.jpg'); }
+        .art-the-parlor { background-image: url('images/the-parlor.jpg'); }
+        .art-the-cellar { background-image: url('images/the-cellar.jpg'); }
+        .art-the-gallery { background-image: url('images/the-gallery.jpg'); }
+        .art-overgrown-manor { background-image: url('images/overgrown-manor.jpg'); }
+        .art-tea-master { background-image: url('images/tea-master.jpg'); }
+        .art-firebrew-adept { background-image: url('images/firebrew-adept.jpg'); }
+        .art-scalding-preparation { background-image: url('images/scalding-preparation.jpg'); }
+        .art-mindful-steeping { background-image: url('images/mindful-steeping.jpg'); }
+        .art-kettle-of-inspiration { background-image: url('images/kettle-of-inspiration.jpg'); }
+        .art-ravenous-guest { background-image: url('images/ravenous-guest.jpg'); }
+        .art-scalding-sipper { background-image: url('images/scalding-sipper.jpg'); }
+        .art-ember-glutton { background-image: url('images/ember-glutton.jpg'); }
+        .art-etiquette-of-stillness { background-image: url('images/etiquette-of-stillness.jpg'); }
+        .art-ceremony-of-reflection { background-image: url('images/ceremony-of-reflection.jpg'); }
+        .art-code-of-the-table { background-image: url('images/code-of-the-table.jpg'); }
+        .art-fertile-offering { background-image: url('images/fertile-offering.jpg'); }
+        .art-generous-canopy { background-image: url('images/generous-canopy.jpg'); }
+        .art-gift-of-the-wellspring { background-image: url('images/gift-of-the-wellspring.jpg'); }
+        .art-porcelain-teapot { background-image: url('images/porcelain-teapot.jpg'); }
+        .art-debt-collector { background-image: url('images/debt-collector.jpg'); }
+        .art-ornamental-vase { background-image: url('images/ornamental-vase.jpg'); }
+
+        /* ── Card swap transition ── */
+        .tilt-anchor.swapping .tilt-card {
+            transition: transform 0.4s, opacity 0.3s;
+            transform: rotateY(90deg) scale(0.9);
+            opacity: 0;
+        }
+
+        /* ── Light theme ── */
+        [data-bs-theme="light"] body { background: #f8f7f4; }
+        [data-bs-theme="light"] .orb { opacity: 0.05; }
+        [data-bs-theme="light"] nav.navbar { background: rgba(248,247,244,0.85) !important; border-bottom-color: rgba(0,0,0,0.06) !important; }
+        [data-bs-theme="light"] .navbar-brand { color: #1a1a2e; }
+        [data-bs-theme="light"] .showcase-title { color: #1a1a2e; }
+        [data-bs-theme="light"] .showcase-sub { color: #888; }
+        [data-bs-theme="light"] .info-card-name { color: #1a1a2e; }
+        [data-bs-theme="light"] .info-type { color: #666; }
+        [data-bs-theme="light"] .info-stat { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.06); }
+        [data-bs-theme="light"] .info-stat-value { color: var(--accent-dark); }
+        [data-bs-theme="light"] .info-flavor { color: #777; border-left-color: rgba(212,165,116,0.4); }
+        [data-bs-theme="light"] .thumb { opacity: 0.4; }
+        [data-bs-theme="light"] .thumb:hover { opacity: 0.7; }
+        [data-bs-theme="light"] .thumb.active { opacity: 1; }
+        [data-bs-theme="light"] .nav-arrow { border-color: rgba(0,0,0,0.1); background: rgba(0,0,0,0.03); color: #777; }
+        [data-bs-theme="light"] .nav-arrow:hover { background: rgba(0,0,0,0.06); color: var(--accent-dark); }
+        [data-bs-theme="light"] .theme-toggle { border-color: rgba(0,0,0,0.1); background: rgba(0,0,0,0.04); color: var(--accent-dark); }
+        [data-bs-theme="light"] .theme-toggle:hover { background: rgba(0,0,0,0.08); }
+        [data-bs-theme="light"] .theme-toggle .bi-sun-fill { display: inline; }
+        [data-bs-theme="light"] .theme-toggle .bi-moon-stars-fill { display: none; }
+        [data-bs-theme="light"] .btn-outline-accent { color: var(--accent-dark); }
+        [data-bs-theme="light"] footer { border-top-color: rgba(0,0,0,0.06); color: #999; }
+        [data-bs-theme="light"] .holo-foil { mix-blend-mode: overlay; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .orb { animation: none !important; }
+            .tilt-card { transition: none !important; }
+            .sparkle { animation: none !important; }
+        }
+
+        @media (max-width: 768px) {
+            .stage { flex-direction: column; gap: 2rem; }
+            .tilt-anchor { width: 252px; height: 352px; }
+            .info-panel { width: 100%; max-width: 320px; }
+        }
+
+        footer { border-top: 1px solid rgba(255,255,255,0.06); padding: 2rem 0; color: #4b5563; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="content-wrapper">
+
+        <!-- Navbar -->
+        <nav class="navbar navbar-dark fixed-top" style="background: rgba(6,6,9,0.8); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <div class="container">
+                <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
+                    <i class="bi bi-lightning-charge-fill" style="color: var(--accent);"></i>
+                    Claude Code Cloud
+                </a>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="index.html" class="btn btn-sm btn-outline-accent"><i class="bi bi-house me-1"></i> Home</a>
+                    <a href="cards.html" class="btn btn-sm btn-outline-accent"><i class="bi bi-suit-spade-fill me-1"></i> Cards</a>
+                    <a href="open-packs.html" class="btn btn-sm btn-outline-accent"><i class="bi bi-box-seam me-1"></i> Packs</a>
+                    <a href="claude-says.html" class="btn btn-sm btn-outline-accent"><i class="bi bi-pencil-square me-1"></i> Blog</a>
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <i class="bi bi-moon-stars-fill"></i>
+                        <i class="bi bi-sun-fill"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="showcase-wrap">
+
+            <h1 class="showcase-title">Card Showcase</h1>
+            <p class="showcase-sub">Tilt and inspect every card in the collection</p>
+
+            <!-- Main stage -->
+            <div class="stage">
+                <div class="tilt-anchor" id="tiltAnchor">
+                    <div class="tilt-card" id="tiltCard">
+                        <div class="tilt-card-face" id="cardFace">
+                            <!-- Card content injected by JS -->
+                        </div>
+                        <div class="holo-foil"></div>
+                        <div class="glare"></div>
+                        <div class="sparkle-layer" id="sparkleLayer"></div>
+                    </div>
+                </div>
+
+                <div class="info-panel" id="infoPanel">
+                    <!-- Info injected by JS -->
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="nav-arrows">
+                <button class="nav-arrow" id="btnPrev"><i class="bi bi-chevron-left"></i></button>
+                <button class="nav-arrow" id="btnNext"><i class="bi bi-chevron-right"></i></button>
+            </div>
+
+            <!-- Thumbnail strip -->
+            <div class="carousel-strip" id="thumbStrip"></div>
+            <div class="card-counter" id="cardCounter">1 / 38</div>
+
+        </div>
+
+        <footer>
+            <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-lightning-charge-fill" style="color: var(--accent);"></i>
+                    <span>Built autonomously by Claude Code</span>
+                </div>
+                <div class="d-flex align-items-center gap-1">
+                    <span style="width:6px;height:6px;background:#4ade80;border-radius:50%;display:inline-block;"></span>
+                    <span>Use arrow keys or scroll to browse</span>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    (function() {
+        'use strict';
+
+        // ── Theme toggle ──
+        const root = document.documentElement;
+        const toggle = document.getElementById('themeToggle');
+        const stored = localStorage.getItem('theme');
+        if (stored) root.setAttribute('data-bs-theme', stored);
+        toggle.addEventListener('click', () => {
+            const next = root.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-bs-theme', next);
+            localStorage.setItem('theme', next);
+        });
+
+        // ── State ──
+        let allCards = [];
+        let currentIdx = 0;
+
+        const tiltAnchor = document.getElementById('tiltAnchor');
+        const tiltCard = document.getElementById('tiltCard');
+        const cardFace = document.getElementById('cardFace');
+        const infoPanel = document.getElementById('infoPanel');
+        const sparkleLayer = document.getElementById('sparkleLayer');
+        const thumbStrip = document.getElementById('thumbStrip');
+        const cardCounter = document.getElementById('cardCounter');
+
+        // ── Mana parser ──
+        function parseMana(cost) {
+            if (!cost) return '';
+            return (cost.match(/\{([^}]+)\}/g) || []).map(t => {
+                const v = t.replace(/[{}]/g, '');
+                const cls = 'WUBRGCX'.includes(v) ? v : 'generic';
+                return `<span class="mana-pip ${cls}">${v}</span>`;
+            }).join('');
+        }
+
+        // ── Render the big card ──
+        function renderShowcaseCard(card) {
+            const mana = parseMana(card.manaCost);
+            const type = card.subtype ? `${card.type} &mdash; ${card.subtype}` : card.type;
+            const rules = (card.text || '').split('\n').map(l =>
+                `<p>${l.replace(/\{([^}]+)\}/g, '<b>{$1}</b>')}</p>`
+            ).join('');
+            const flavor = card.flavorText
+                ? `<div class="tc-flavor">${card.flavorText.replace(/\\n/g, '<br>')}</div>` : '';
+            const pt = (card.power !== null && card.toughness !== null)
+                ? `<div class="tc-pt">${card.power}/${card.toughness}</div>` : '';
+            const gemClass = `gem-${card.rarity}`;
+
+            cardFace.innerHTML = `
+                <div class="tilt-card-frame">
+                    <div class="tc-header">
+                        <span class="tc-name">${card.name}</span>
+                        <span class="tc-mana">${mana}</span>
+                    </div>
+                    <div class="tc-art">
+                        <div class="tc-art-inner art-${card.art}"></div>
+                    </div>
+                    <div class="tc-type">
+                        ${type}
+                        <span class="tc-rarity-gem ${gemClass}"></span>
+                    </div>
+                    <div class="tc-text" style="position:relative;">
+                        <div class="tc-rules">${rules}</div>
+                        ${flavor}
+                        ${pt}
+                    </div>
+                </div>`;
+
+            // Foil intensity class
+            tiltCard.className = 'tilt-card';
+            if (card.rarity === 'mythic') tiltCard.classList.add('foil-mythic');
+            else if (card.rarity === 'rare') tiltCard.classList.add('foil-rare');
+            else if (card.rarity === 'uncommon') tiltCard.classList.add('foil-uncommon');
+
+            // Sparkles for mythics
+            sparkleLayer.innerHTML = '';
+            if (card.rarity === 'mythic') {
+                for (let i = 0; i < 15; i++) {
+                    const s = document.createElement('div');
+                    s.className = 'sparkle';
+                    s.style.left = Math.random() * 100 + '%';
+                    s.style.top = Math.random() * 100 + '%';
+                    s.style.animationDelay = (Math.random() * 2) + 's';
+                    s.style.animationDuration = (1.5 + Math.random()) + 's';
+                    sparkleLayer.appendChild(s);
+                }
+            }
+        }
+
+        // ── Render info panel ──
+        function renderInfo(card) {
+            const type = card.subtype ? `${card.type} &mdash; ${card.subtype}` : card.type;
+            const colorDots = (card.colors || []).map(c =>
+                `<div class="color-dot c-${c}"></div>`
+            ).join('') || '<span style="color:#555;font-size:0.8rem;">Colorless</span>';
+
+            const rarityColors = { common: '#888', uncommon: '#c0ccd8', rare: '#e8c84a', mythic: '#f08030' };
+            const set = card.art.startsWith('tea') || card.art.startsWith('the-') ||
+                        card.art.startsWith('overgrown') || card.art.startsWith('firebrew') ||
+                        card.art.startsWith('scalding') || card.art.startsWith('mindful') ||
+                        card.art.startsWith('kettle') || card.art.startsWith('ravenous') ||
+                        card.art.startsWith('ember') || card.art.startsWith('etiquette') ||
+                        card.art.startsWith('ceremony') || card.art.startsWith('code-of') ||
+                        card.art.startsWith('fertile') || card.art.startsWith('generous') ||
+                        card.art.startsWith('gift') || card.art.startsWith('porcelain') ||
+                        card.art.startsWith('debt') || card.art.startsWith('ornamental') ||
+                        card.art === 'greenhouse' || card.art === 'zen-garden'
+                        ? 'Tea Ceremony' : 'Core Set';
+
+            infoPanel.innerHTML = `
+                <div class="info-card-name">${card.name}</div>
+                <div class="info-type">${type}</div>
+                <div class="info-colors">${colorDots}</div>
+                <div class="info-stats">
+                    <div class="info-stat">
+                        <div class="info-stat-label">Rarity</div>
+                        <div class="info-stat-value" style="color:${rarityColors[card.rarity]}">${card.rarity.charAt(0).toUpperCase() + card.rarity.slice(1)}</div>
+                    </div>
+                    <div class="info-stat">
+                        <div class="info-stat-label">Mana Cost</div>
+                        <div class="info-stat-value">${card.manaCost || 'None'}</div>
+                    </div>
+                    ${card.power !== null ? `
+                    <div class="info-stat">
+                        <div class="info-stat-label">Power</div>
+                        <div class="info-stat-value">${card.power}</div>
+                    </div>
+                    <div class="info-stat">
+                        <div class="info-stat-label">Toughness</div>
+                        <div class="info-stat-value">${card.toughness}</div>
+                    </div>` : ''}
+                </div>
+                ${card.flavorText ? `<div class="info-flavor">${card.flavorText.replace(/\\n/g, '<br>')}</div>` : ''}
+                <div class="info-set"><i class="bi bi-collection me-1"></i> ${set}</div>
+            `;
+        }
+
+        // ── Select a card ──
+        function selectCard(idx) {
+            if (idx < 0 || idx >= allCards.length) return;
+
+            // Swap animation
+            tiltAnchor.classList.add('swapping');
+            setTimeout(() => {
+                currentIdx = idx;
+                const card = allCards[idx];
+                renderShowcaseCard(card);
+                renderInfo(card);
+                cardCounter.textContent = `${idx + 1} / ${allCards.length}`;
+
+                // Update thumbs
+                thumbStrip.querySelectorAll('.thumb').forEach((t, i) => {
+                    t.classList.toggle('active', i === idx);
+                });
+
+                // Scroll thumb into view
+                const activeThumb = thumbStrip.children[idx];
+                if (activeThumb) activeThumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+
+                tiltAnchor.classList.remove('swapping');
+            }, 300);
+        }
+
+        // ── 3D Tilt logic ──
+        function handleTilt(clientX, clientY) {
+            const rect = tiltAnchor.getBoundingClientRect();
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+            const w = rect.width;
+            const h = rect.height;
+
+            // Normalize to -0.5 to 0.5
+            const nx = (x / w) - 0.5;
+            const ny = (y / h) - 0.5;
+
+            // Tilt angles (max ~15 degrees)
+            const ry = nx * 30;
+            const rx = ny * -20;
+
+            tiltCard.style.setProperty('--rx', rx + 'deg');
+            tiltCard.style.setProperty('--ry', ry + 'deg');
+            tiltCard.style.setProperty('--mx', x + 'px');
+            tiltCard.style.setProperty('--my', y + 'px');
+        }
+
+        function resetTilt() {
+            tiltCard.style.setProperty('--rx', '0deg');
+            tiltCard.style.setProperty('--ry', '0deg');
+            tiltCard.style.transition = 'transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)';
+            setTimeout(() => { tiltCard.style.transition = 'transform 0.12s ease-out'; }, 600);
+        }
+
+        // Mouse events
+        tiltAnchor.addEventListener('mousemove', e => handleTilt(e.clientX, e.clientY));
+        tiltAnchor.addEventListener('mouseleave', resetTilt);
+
+        // Touch events
+        tiltAnchor.addEventListener('touchstart', () => tiltCard.classList.add('touching'), { passive: true });
+        tiltAnchor.addEventListener('touchmove', e => {
+            const t = e.touches[0];
+            handleTilt(t.clientX, t.clientY);
+        }, { passive: true });
+        tiltAnchor.addEventListener('touchend', () => {
+            tiltCard.classList.remove('touching');
+            resetTilt();
+        });
+
+        // ── Keyboard navigation ──
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectCard((currentIdx - 1 + allCards.length) % allCards.length);
+            } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectCard((currentIdx + 1) % allCards.length);
+            }
+        });
+
+        // ── Button navigation ──
+        document.getElementById('btnPrev').addEventListener('click', () => {
+            selectCard((currentIdx - 1 + allCards.length) % allCards.length);
+        });
+        document.getElementById('btnNext').addEventListener('click', () => {
+            selectCard((currentIdx + 1) % allCards.length);
+        });
+
+        // ── Init ──
+        async function init() {
+            try {
+                const res = await fetch('data/cards.json');
+                allCards = await res.json();
+
+                // Build thumbnails
+                allCards.forEach((card, i) => {
+                    const thumb = document.createElement('div');
+                    thumb.className = `thumb art-${card.art}`;
+                    if (i === 0) thumb.classList.add('active');
+                    thumb.addEventListener('click', () => selectCard(i));
+                    thumbStrip.appendChild(thumb);
+                });
+
+                // Show first card
+                renderShowcaseCard(allCards[0]);
+                renderInfo(allCards[0]);
+
+            } catch (e) {
+                cardFace.innerHTML = '<div style="padding:2rem;color:#888;text-align:center;">Could not load cards.</div>';
+            }
+        }
+
+        init();
+    })();
+    </script>
+</body>
+</html>
