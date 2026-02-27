@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Packs — Claude Code Cloud</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #d4a574;
+            --accent-light: #e8c9a0;
+            --accent-dark: #b8875a;
+        }
+
+        body { background: #060609; overflow-x: hidden; min-height: 100vh; }
+
+        /* ── Orbs ── */
+        .orb { position: fixed; border-radius: 50%; filter: blur(120px); opacity: 0.12; pointer-events: none; z-index: 0; }
+        .orb-1 { width: 500px; height: 500px; background: #7c6ce0; top: -150px; right: -100px; animation: f1 22s ease-in-out infinite; }
+        .orb-2 { width: 400px; height: 400px; background: var(--accent); bottom: -100px; left: -80px; animation: f2 18s ease-in-out infinite; }
+        .orb-3 { width: 350px; height: 350px; background: #e85a20; top: 50%; left: 50%; animation: f3 20s ease-in-out infinite; opacity: 0; transition: opacity 1s; }
+        .orb-3.mythic-glow { opacity: 0.18; }
+        @keyframes f1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-60px,80px)} }
+        @keyframes f2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(50px,-60px)} }
+        @keyframes f3 { 0%,100%{transform:translate(-50%,-50%) scale(1)} 50%{transform:translate(-50%,-50%) scale(1.3)} }
+
+        .content-wrapper { position: relative; z-index: 1; }
+
+        /* ── Shared nav/button styles ── */
+        .theme-toggle {
+            width: 40px; height: 40px; border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05);
+            color: var(--accent-light); display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; cursor: pointer; transition: background 0.3s, border-color 0.3s, transform 0.3s;
+        }
+        .theme-toggle:hover { background: rgba(255,255,255,0.1); border-color: var(--accent); transform: scale(1.05); }
+        .theme-toggle .bi-sun-fill { display: none; }
+        .theme-toggle .bi-moon-stars-fill { display: inline; }
+        .btn-accent {
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            color: #000; border: none; padding: 0.5rem 1.25rem; font-weight: 600;
+            border-radius: 10px; font-size: 0.85rem; transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-accent:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,165,116,0.25); color: #000; }
+        .btn-outline-accent {
+            border: 1px solid rgba(212,165,116,0.4); color: var(--accent-light);
+            padding: 0.5rem 1.25rem; font-weight: 600; border-radius: 10px; font-size: 0.85rem;
+            background: transparent; transition: background 0.2s, border-color 0.2s;
+        }
+        .btn-outline-accent:hover { background: rgba(212,165,116,0.08); border-color: var(--accent); color: var(--accent-light); }
+
+        /* ── Page header ── */
+        .page-header {
+            padding: 7rem 0 1.5rem; text-align: center;
+        }
+        .page-title {
+            font-size: clamp(2rem, 5vw, 3rem); font-weight: 800;
+            letter-spacing: -0.02em; margin-bottom: 0.25rem;
+        }
+        .page-subtitle { color: #888; font-size: 1rem; }
+
+        /* ── Stats bar ── */
+        .stats-bar {
+            display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;
+            margin: 1.5rem 0 2rem; font-size: 0.85rem; color: #888;
+        }
+        .stat-item { display: flex; align-items: center; gap: 0.4rem; }
+        .stat-value { color: var(--accent-light); font-weight: 700; font-size: 1.1rem; }
+
+        /* ── Collection progress ── */
+        .collection-bar-wrap {
+            max-width: 500px; margin: 0 auto 2.5rem;
+        }
+        .collection-label {
+            display: flex; justify-content: space-between; font-size: 0.8rem; color: #777; margin-bottom: 0.4rem;
+        }
+        .collection-track {
+            height: 8px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden;
+        }
+        .collection-fill {
+            height: 100%; border-radius: 99px; transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+            background: linear-gradient(90deg, var(--accent-dark), var(--accent), #e8c84a);
+        }
+
+        /* ══════════════════════════════════════
+           PACK
+        ══════════════════════════════════════ */
+        .pack-area {
+            display: flex; justify-content: center; align-items: center;
+            min-height: 340px; margin-bottom: 2rem;
+        }
+
+        .booster-pack {
+            width: 200px; height: 300px; perspective: 800px; cursor: pointer;
+            position: relative;
+        }
+        .booster-pack.opened { pointer-events: none; }
+
+        .pack-wrapper {
+            width: 100%; height: 100%;
+            position: relative; transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+            transform-style: preserve-3d;
+        }
+        .booster-pack:hover:not(.opened) .pack-wrapper {
+            transform: translateY(-8px) rotateY(5deg);
+        }
+
+        .pack-face {
+            position: absolute; inset: 0;
+            border-radius: 14px; overflow: hidden;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border: 2px solid rgba(212,165,116,0.3);
+            background: linear-gradient(160deg, #1a1024, #12081e 40%, #1a1024);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        .pack-face::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg,
+                transparent 30%, rgba(212,165,116,0.06) 45%,
+                rgba(212,165,116,0.12) 50%, rgba(212,165,116,0.06) 55%,
+                transparent 70%);
+            transition: transform 0.4s;
+        }
+        .booster-pack:hover:not(.opened) .pack-face::before {
+            transform: translateX(40px);
+        }
+
+        .pack-icon {
+            font-size: 3rem; margin-bottom: 0.75rem;
+            background: linear-gradient(135deg, var(--accent), #e8c84a);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .pack-title {
+            font-size: 0.9rem; font-weight: 700; color: var(--accent-light);
+            letter-spacing: 0.05em; text-transform: uppercase;
+        }
+        .pack-subtitle {
+            font-size: 0.7rem; color: #777; margin-top: 0.25rem;
+        }
+        .pack-hint {
+            position: absolute; bottom: 16px; font-size: 0.7rem; color: #555;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+        /* Pack tear animation */
+        .pack-tearing .pack-wrapper {
+            animation: tearPack 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @keyframes tearPack {
+            0% { transform: scale(1); opacity: 1; }
+            30% { transform: scale(1.08) rotateZ(-2deg); opacity: 1; }
+            100% { transform: scale(0.5) rotateZ(5deg) translateY(-60px); opacity: 0; }
+        }
+
+        /* ══════════════════════════════════════
+           CARD REVEAL AREA
+        ══════════════════════════════════════ */
+        .reveal-area {
+            display: none; flex-direction: column; align-items: center; gap: 1.5rem;
+            padding-bottom: 3rem;
+        }
+        .reveal-area.active { display: flex; }
+
+        .reveal-cards {
+            display: flex; gap: 1.25rem; flex-wrap: wrap; justify-content: center;
+        }
+
+        /* ── Flip card container ── */
+        .flip-card {
+            width: 252px; height: 352px; perspective: 1000px; cursor: pointer;
+        }
+        .flip-card-inner {
+            width: 100%; height: 100%; position: relative;
+            transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+            transform-style: preserve-3d;
+        }
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute; inset: 0;
+            backface-visibility: hidden;
+            border-radius: 16px; overflow: hidden;
+        }
+
+        /* Card back (face-down) */
+        .flip-card-front {
+            background: linear-gradient(160deg, #1a1024, #0e0618);
+            border: 2px solid rgba(212,165,116,0.2);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+        .card-back-design {
+            width: 80%; height: 85%;
+            border: 2px solid rgba(212,165,116,0.15);
+            border-radius: 10px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: repeating-conic-gradient(
+                rgba(212,165,116,0.03) 0% 25%, transparent 0% 50%
+            ) 0 0 / 20px 20px;
+        }
+        .card-back-logo {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .card-back-text {
+            font-size: 0.65rem; color: rgba(212,165,116,0.3); margin-top: 0.5rem;
+            text-transform: uppercase; letter-spacing: 0.15em; font-weight: 600;
+        }
+
+        /* Card front (face-up) */
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
+
+        /* Entrance animation for each card */
+        .flip-card {
+            opacity: 0; transform: translateY(40px) scale(0.8);
+        }
+        .flip-card.dealt {
+            animation: dealCard 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @keyframes dealCard {
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* ── Rarity glow on reveal ── */
+        .flip-card.flipped.rarity-glow-uncommon .flip-card-inner {
+            filter: drop-shadow(0 0 10px rgba(192,204,216,0.3));
+        }
+        .flip-card.flipped.rarity-glow-rare .flip-card-inner {
+            filter: drop-shadow(0 0 15px rgba(232,200,74,0.4));
+        }
+        .flip-card.flipped.rarity-glow-mythic .flip-card-inner {
+            filter: drop-shadow(0 0 25px rgba(232,90,32,0.5));
+        }
+
+        /* ── Holographic overlay for rares/mythics ── */
+        .holo-overlay {
+            position: absolute; inset: 0; z-index: 10;
+            pointer-events: none; opacity: 0; transition: opacity 0.5s;
+            border-radius: 16px; overflow: hidden;
+        }
+        .flip-card.flipped .holo-overlay { opacity: 1; }
+
+        .holo-overlay.holo-rare::after {
+            content: ''; position: absolute; inset: -50%;
+            background: conic-gradient(
+                transparent 0deg, rgba(232,200,74,0.08) 60deg,
+                transparent 120deg, rgba(200,164,60,0.08) 180deg,
+                transparent 240deg, rgba(232,200,74,0.08) 300deg,
+                transparent 360deg
+            );
+            animation: holoSpin 6s linear infinite;
+        }
+        .holo-overlay.holo-mythic::after {
+            content: ''; position: absolute; inset: -50%;
+            background: conic-gradient(
+                rgba(232,90,32,0.12) 0deg, rgba(200,50,200,0.08) 72deg,
+                rgba(74,120,232,0.08) 144deg, rgba(232,200,74,0.12) 216deg,
+                rgba(232,90,32,0.12) 288deg, rgba(200,50,200,0.08) 360deg
+            );
+            animation: holoSpin 4s linear infinite;
+        }
+        @keyframes holoSpin { to { transform: rotate(360deg); } }
+
+        /* ── Particles for mythic reveals ── */
+        .particle-container {
+            position: fixed; inset: 0; pointer-events: none; z-index: 100;
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute; border-radius: 50%;
+            animation: particleRise 1.5s ease-out forwards;
+        }
+        @keyframes particleRise {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-200px) scale(0); opacity: 0; }
+        }
+
+        /* ── MTG Card (reuse from cards.html) ── */
+        .mtg-card {
+            width: 252px; height: 352px; border-radius: 16px;
+            overflow: hidden; position: relative;
+        }
+        .mtg-card-inner {
+            border-radius: 14px; padding: 8px; height: 100%;
+            display: flex; flex-direction: column;
+            background: linear-gradient(135deg, #e8dfc8, #d8ccb0, #e4d9c2);
+        }
+        .mtg-card-frame {
+            border-radius: 10px; background: #c8bfa8;
+            border: 1px solid rgba(0,0,0,0.12); overflow: hidden;
+            flex: 1; display: flex; flex-direction: column;
+        }
+        .card-header-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 6px 8px 5px; background: rgba(255,255,255,0.45);
+            border-radius: 6px 6px 0 0; min-height: 30px;
+            border-bottom: 1px solid rgba(0,0,0,0.1); flex-shrink: 0;
+        }
+        .card-name {
+            font-size: 0.78rem; font-weight: 700; color: #1a1a1a;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            flex: 1; margin-right: 6px;
+        }
+        .mana-cost { display: flex; gap: 2px; flex-shrink: 0; }
+        .mana-pip {
+            width: 16px; height: 16px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.55rem; font-weight: 800; color: #111;
+            border: 1px solid rgba(0,0,0,0.3);
+        }
+        .mana-pip.W { background: linear-gradient(135deg, #f9f5e3, #e8dfc0); }
+        .mana-pip.U { background: linear-gradient(135deg, #4aa4d4, #1a6bc4); color: #fff; }
+        .mana-pip.B { background: linear-gradient(135deg, #555, #222); color: #ccc; }
+        .mana-pip.R { background: linear-gradient(135deg, #e86040, #c4351e); color: #fff; }
+        .mana-pip.G { background: linear-gradient(135deg, #4aad5a, #2a7c3a); color: #fff; }
+        .mana-pip.C { background: linear-gradient(135deg, #bbb, #888); }
+        .mana-pip.X { background: linear-gradient(135deg, #bbb, #888); }
+        .mana-pip.generic { background: linear-gradient(135deg, #d0d0d0, #999); }
+
+        .card-art { height: 130px; flex-shrink: 0; margin: 4px 6px; border-radius: 4px; overflow: hidden; position: relative; }
+        .card-art-inner {
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0; color: transparent;
+            background-size: cover; background-position: center;
+        }
+
+        /* Art images */
+        .art-architect { background-image: url('images/architect.jpg'); }
+        .art-injection { background-image: url('images/injection.jpg'); }
+        .art-recursion { background-image: url('images/recursion.jpg'); }
+        .art-overflow { background-image: url('images/overflow.jpg'); }
+        .art-conflict { background-image: url('images/conflict.jpg'); }
+        .art-generator { background-image: url('images/generator.jpg'); }
+        .art-null { background-image: url('images/null.jpg'); }
+        .art-sandbox { background-image: url('images/sandbox.jpg'); }
+        .art-hydra { background-image: url('images/hydra.jpg'); }
+        .art-duck { background-image: url('images/duck.jpg'); }
+        .art-push { background-image: url('images/push.jpg'); }
+        .art-loop { background-image: url('images/loop.jpg'); }
+        .art-tea-token { background-image: url('images/tea-token.jpg'); }
+        .art-tea-garden { background-image: url('images/tea-garden.jpg'); }
+        .art-greenhouse { background-image: url('images/greenhouse.jpg'); }
+        .art-zen-garden { background-image: url('images/zen-garden.jpg'); }
+        .art-the-mansion { background-image: url('images/the-mansion.jpg'); }
+        .art-the-parlor { background-image: url('images/the-parlor.jpg'); }
+        .art-the-cellar { background-image: url('images/the-cellar.jpg'); }
+        .art-the-gallery { background-image: url('images/the-gallery.jpg'); }
+        .art-overgrown-manor { background-image: url('images/overgrown-manor.jpg'); }
+        .art-tea-master { background-image: url('images/tea-master.jpg'); }
+        .art-firebrew-adept { background-image: url('images/firebrew-adept.jpg'); }
+        .art-scalding-preparation { background-image: url('images/scalding-preparation.jpg'); }
+        .art-mindful-steeping { background-image: url('images/mindful-steeping.jpg'); }
+        .art-kettle-of-inspiration { background-image: url('images/kettle-of-inspiration.jpg'); }
+        .art-ravenous-guest { background-image: url('images/ravenous-guest.jpg'); }
+        .art-scalding-sipper { background-image: url('images/scalding-sipper.jpg'); }
+        .art-ember-glutton { background-image: url('images/ember-glutton.jpg'); }
+        .art-etiquette-of-stillness { background-image: url('images/etiquette-of-stillness.jpg'); }
+        .art-ceremony-of-reflection { background-image: url('images/ceremony-of-reflection.jpg'); }
+        .art-code-of-the-table { background-image: url('images/code-of-the-table.jpg'); }
+        .art-fertile-offering { background-image: url('images/fertile-offering.jpg'); }
+        .art-generous-canopy { background-image: url('images/generous-canopy.jpg'); }
+        .art-gift-of-the-wellspring { background-image: url('images/gift-of-the-wellspring.jpg'); }
+        .art-porcelain-teapot { background-image: url('images/porcelain-teapot.jpg'); }
+        .art-debt-collector { background-image: url('images/debt-collector.jpg'); }
+        .art-ornamental-vase { background-image: url('images/ornamental-vase.jpg'); }
+
+        .card-type-line {
+            padding: 4px 8px; font-size: 0.68rem; font-weight: 600;
+            color: #1a1a1a; background: rgba(255,255,255,0.4);
+            border-top: 1px solid rgba(0,0,0,0.1);
+            border-bottom: 1px solid rgba(0,0,0,0.1); flex-shrink: 0;
+        }
+        .card-text-box {
+            padding: 8px; flex: 1;
+            background: rgba(255,255,255,0.35); border-radius: 0 0 6px 6px;
+            overflow-y: auto; position: relative;
+        }
+        .card-rules { font-size: 0.65rem; line-height: 1.45; color: #1a1a1a; margin-bottom: 0.3rem; }
+        .card-rules p { margin-bottom: 0.2rem; }
+        .card-rules p:last-child { margin-bottom: 0; }
+        .card-flavor {
+            font-size: 0.6rem; font-style: italic; color: #4a4a4a;
+            border-top: 1px solid rgba(0,0,0,0.12); padding-top: 0.3rem;
+            margin-top: 0.2rem; line-height: 1.4;
+        }
+        .card-pt {
+            position: absolute; bottom: 6px; right: 6px;
+            background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.15);
+            border-radius: 5px; padding: 1px 8px;
+            font-size: 0.78rem; font-weight: 800; color: #1a1a1a;
+        }
+        .card-rarity {
+            position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+            width: 10px; height: 10px; border-radius: 50%;
+            border: 1px solid rgba(0,0,0,0.3);
+        }
+        .rarity-common { background: #111; }
+        .rarity-uncommon { background: linear-gradient(135deg, #7a8a9a, #c0ccd8); }
+        .rarity-rare { background: linear-gradient(135deg, #c9a43c, #e8c84a); }
+        .rarity-mythic { background: linear-gradient(135deg, #e85a20, #f08030); }
+
+        /* ── Action buttons ── */
+        .action-row {
+            display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        .btn-open-pack {
+            padding: 0.75rem 2rem; font-size: 1rem; font-weight: 700;
+            border-radius: 12px; border: none; cursor: pointer;
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            color: #000; transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-open-pack:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(212,165,116,0.35);
+        }
+        .btn-open-pack:disabled {
+            opacity: 0.4; transform: none; box-shadow: none; cursor: default;
+        }
+        .btn-reveal-all {
+            padding: 0.6rem 1.5rem; font-size: 0.85rem; font-weight: 600;
+            border-radius: 10px; border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.05); color: #ccc; cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .btn-reveal-all:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.25); }
+
+        /* ── New badge ── */
+        .new-badge {
+            position: absolute; top: 8px; right: 8px; z-index: 20;
+            padding: 2px 8px; border-radius: 50px;
+            font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: #000; letter-spacing: 0.05em;
+            animation: badgePop 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        @keyframes badgePop {
+            0% { transform: scale(0); } 100% { transform: scale(1); }
+        }
+
+        /* ── Rarity label on reveal ── */
+        .rarity-label {
+            position: absolute; top: 8px; left: 8px; z-index: 20;
+            padding: 2px 8px; border-radius: 50px;
+            font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.05em;
+            animation: badgePop 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+        }
+        .rarity-label.rl-common { background: #444; color: #aaa; }
+        .rarity-label.rl-uncommon { background: linear-gradient(135deg, #7a8a9a, #c0ccd8); color: #1a1a1a; }
+        .rarity-label.rl-rare { background: linear-gradient(135deg, #c9a43c, #e8c84a); color: #1a1a1a; }
+        .rarity-label.rl-mythic { background: linear-gradient(135deg, #e85a20, #f08030); color: #fff; }
+
+        /* ── Screen flash for mythic ── */
+        .screen-flash {
+            position: fixed; inset: 0; z-index: 99;
+            background: radial-gradient(circle, rgba(232,90,32,0.3), transparent 70%);
+            opacity: 0; pointer-events: none;
+            animation: flashIn 0.6s ease-out forwards;
+        }
+        @keyframes flashIn {
+            0% { opacity: 1; } 100% { opacity: 0; }
+        }
+
+        /* ── Light theme ── */
+        [data-bs-theme="light"] body { background: #f8f7f4; }
+        [data-bs-theme="light"] .orb { opacity: 0.06; }
+        [data-bs-theme="light"] nav.navbar { background: rgba(248,247,244,0.85) !important; border-bottom-color: rgba(0,0,0,0.06) !important; }
+        [data-bs-theme="light"] .navbar-brand { color: #1a1a2e; }
+        [data-bs-theme="light"] .page-title { color: #1a1a2e; }
+        [data-bs-theme="light"] .page-subtitle { color: #555; }
+        [data-bs-theme="light"] .stat-value { color: var(--accent-dark); }
+        [data-bs-theme="light"] .stats-bar { color: #777; }
+        [data-bs-theme="light"] .collection-label { color: #999; }
+        [data-bs-theme="light"] .collection-track { background: rgba(0,0,0,0.06); }
+        [data-bs-theme="light"] .pack-face { background: linear-gradient(160deg, #e8e0d0, #f4ede0 40%, #e8e0d0); border-color: rgba(212,165,116,0.4); }
+        [data-bs-theme="light"] .pack-icon { background: linear-gradient(135deg, var(--accent-dark), var(--accent)); -webkit-background-clip: text; background-clip: text; }
+        [data-bs-theme="light"] .pack-title { color: var(--accent-dark); }
+        [data-bs-theme="light"] .flip-card-front { background: linear-gradient(160deg, #e8e0d0, #f4ede0); border-color: rgba(212,165,116,0.3); }
+        [data-bs-theme="light"] .card-back-design { border-color: rgba(212,165,116,0.2); }
+        [data-bs-theme="light"] .card-back-text { color: rgba(184,135,90,0.4); }
+        [data-bs-theme="light"] .btn-reveal-all { border-color: rgba(0,0,0,0.12); background: rgba(0,0,0,0.03); color: #555; }
+        [data-bs-theme="light"] .theme-toggle { border-color: rgba(0,0,0,0.1); background: rgba(0,0,0,0.04); color: var(--accent-dark); }
+        [data-bs-theme="light"] .theme-toggle:hover { background: rgba(0,0,0,0.08); }
+        [data-bs-theme="light"] .theme-toggle .bi-sun-fill { display: inline; }
+        [data-bs-theme="light"] .theme-toggle .bi-moon-stars-fill { display: none; }
+        [data-bs-theme="light"] .btn-outline-accent { color: var(--accent-dark); }
+        [data-bs-theme="light"] footer { border-top-color: rgba(0,0,0,0.06); color: #999; }
+
+        /* ── Animations ── */
+        @media (prefers-reduced-motion: reduce) {
+            .orb { animation: none !important; }
+            .flip-card-inner { transition: none !important; }
+            .flip-card { animation: none !important; opacity: 1 !important; transform: none !important; }
+        }
+
+        footer { border-top: 1px solid rgba(255,255,255,0.06); padding: 2rem 0; color: #4b5563; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3" id="mythicOrb"></div>
+    <div id="particleContainer" class="particle-container"></div>
+
+    <div class="content-wrapper">
+
+        <!-- Navbar -->
+        <nav class="navbar navbar-dark fixed-top" style="background: rgba(6,6,9,0.8); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <div class="container">
+                <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
+                    <i class="bi bi-lightning-charge-fill" style="color: var(--accent);"></i>
+                    Claude Code Cloud
+                </a>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="index.html" class="btn btn-sm btn-outline-accent">
+                        <i class="bi bi-house me-1"></i> Home
+                    </a>
+                    <a href="cards.html" class="btn btn-sm btn-outline-accent">
+                        <i class="bi bi-suit-spade-fill me-1"></i> Cards
+                    </a>
+                    <a href="claude-says.html" class="btn btn-sm btn-outline-accent">
+                        <i class="bi bi-pencil-square me-1"></i> Blog
+                    </a>
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <i class="bi bi-moon-stars-fill"></i>
+                        <i class="bi bi-sun-fill"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+
+            <!-- Page header -->
+            <div class="page-header">
+                <h1 class="page-title">Open Packs</h1>
+                <p class="page-subtitle">Rip open booster packs and collect all 38 cards</p>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <i class="bi bi-box-seam"></i>
+                    <span>Packs opened:</span>
+                    <span class="stat-value" id="statPacks">0</span>
+                </div>
+                <div class="stat-item">
+                    <i class="bi bi-collection"></i>
+                    <span>Unique cards:</span>
+                    <span class="stat-value" id="statUnique">0</span>
+                    <span>/ 38</span>
+                </div>
+                <div class="stat-item">
+                    <i class="bi bi-gem"></i>
+                    <span>Mythics found:</span>
+                    <span class="stat-value" id="statMythics">0</span>
+                    <span>/ 3</span>
+                </div>
+            </div>
+
+            <!-- Collection progress -->
+            <div class="collection-bar-wrap">
+                <div class="collection-label">
+                    <span>Collection progress</span>
+                    <span id="collectionPct">0%</span>
+                </div>
+                <div class="collection-track">
+                    <div class="collection-fill" id="collectionFill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Pack area -->
+            <div class="pack-area" id="packArea">
+                <div class="booster-pack" id="boosterPack">
+                    <div class="pack-wrapper">
+                        <div class="pack-face">
+                            <div class="pack-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+                            <div class="pack-title">Booster Pack</div>
+                            <div class="pack-subtitle">5 cards inside</div>
+                            <div class="pack-hint">Click to open</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reveal area -->
+            <div class="reveal-area" id="revealArea">
+                <div class="reveal-cards" id="revealCards"></div>
+                <div class="action-row">
+                    <button class="btn-reveal-all" id="btnRevealAll">
+                        <i class="bi bi-eye me-1"></i> Reveal All
+                    </button>
+                    <button class="btn-open-pack" id="btnNextPack">
+                        <i class="bi bi-box-seam me-1"></i> Open Another Pack
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-lightning-charge-fill" style="color: var(--accent);"></i>
+                    <span>Built autonomously by Claude Code</span>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-outline-accent" id="btnReset" style="font-size:0.75rem;padding:0.25rem 0.75rem;">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Collection
+                    </button>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    (function() {
+        'use strict';
+
+        // ── Theme toggle ──
+        const root = document.documentElement;
+        const toggle = document.getElementById('themeToggle');
+        const stored = localStorage.getItem('theme');
+        if (stored) root.setAttribute('data-bs-theme', stored);
+        toggle.addEventListener('click', () => {
+            const next = root.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-bs-theme', next);
+            localStorage.setItem('theme', next);
+        });
+
+        // ── State ──
+        let allCards = [];
+        let collection = JSON.parse(localStorage.getItem('cc-collection') || '{}');
+        // collection = { "card-art-name": count, ... }
+        let packsOpened = parseInt(localStorage.getItem('cc-packs') || '0');
+        let isAnimating = false;
+
+        // ── Elements ──
+        const packArea = document.getElementById('packArea');
+        const boosterPack = document.getElementById('boosterPack');
+        const revealArea = document.getElementById('revealArea');
+        const revealCards = document.getElementById('revealCards');
+        const btnRevealAll = document.getElementById('btnRevealAll');
+        const btnNextPack = document.getElementById('btnNextPack');
+        const btnReset = document.getElementById('btnReset');
+        const mythicOrb = document.getElementById('mythicOrb');
+
+        // ── Load cards ──
+        async function init() {
+            try {
+                const res = await fetch('data/cards.json');
+                allCards = await res.json();
+                updateStats();
+            } catch (e) {
+                packArea.innerHTML = '<p style="color:#888;">Could not load cards data.</p>';
+            }
+        }
+
+        // ── Pack generation ──
+        // Real booster pack distribution: 3 commons, 1 uncommon, 1 rare/mythic
+        // Mythic replaces the rare slot ~1 in 7 packs
+        function generatePack() {
+            const commons = allCards.filter(c => c.rarity === 'common');
+            const uncommons = allCards.filter(c => c.rarity === 'uncommon');
+            const rares = allCards.filter(c => c.rarity === 'rare');
+            const mythics = allCards.filter(c => c.rarity === 'mythic');
+
+            const pack = [];
+
+            // 3 commons (no duplicates within pack)
+            const commonPool = shuffle([...commons]);
+            for (let i = 0; i < 3 && i < commonPool.length; i++) {
+                pack.push(commonPool[i]);
+            }
+
+            // 1 uncommon
+            pack.push(uncommons[Math.floor(Math.random() * uncommons.length)]);
+
+            // 1 rare or mythic (1-in-7 chance for mythic)
+            if (mythics.length > 0 && Math.random() < 1/7) {
+                pack.push(mythics[Math.floor(Math.random() * mythics.length)]);
+            } else {
+                pack.push(rares[Math.floor(Math.random() * rares.length)]);
+            }
+
+            return pack;
+        }
+
+        function shuffle(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // ── Card rendering ──
+        function parseMana(cost) {
+            if (!cost) return '';
+            const tokens = cost.match(/\{([^}]+)\}/g) || [];
+            return tokens.map(t => {
+                const val = t.replace(/[{}]/g, '');
+                let cls = 'generic';
+                if ('WUBRGCX'.includes(val)) cls = val;
+                return `<span class="mana-pip ${cls}">${val}</span>`;
+            }).join('');
+        }
+
+        function renderCardHTML(card) {
+            const manaHtml = parseMana(card.manaCost);
+            const artClass = `art-${card.art || 'sandbox'}`;
+            const typeLine = card.subtype ? `${card.type} — ${card.subtype}` : card.type;
+            const rulesHtml = (card.text || '').split('\n').map(line =>
+                `<p>${line.replace(/\{([^}]+)\}/g, '<b>{$1}</b>')}</p>`
+            ).join('');
+            const flavorHtml = card.flavorText
+                ? `<div class="card-flavor">${card.flavorText.replace(/\\n/g, '<br>')}</div>`
+                : '';
+            const ptHtml = (card.power !== null && card.toughness !== null)
+                ? `<div class="card-pt">${card.power}/${card.toughness}</div>`
+                : '';
+            const rarityClass = `rarity-${card.rarity || 'common'}`;
+
+            return `
+                <div class="mtg-card">
+                    <div class="mtg-card-inner">
+                        <div class="mtg-card-frame">
+                            <div class="card-header-row">
+                                <span class="card-name">${card.name}</span>
+                                <span class="mana-cost">${manaHtml}</span>
+                            </div>
+                            <div class="card-art">
+                                <div class="card-art-inner ${artClass}"></div>
+                            </div>
+                            <div class="card-type-line">
+                                ${typeLine}
+                                <span class="card-rarity ${rarityClass}"></span>
+                            </div>
+                            <div class="card-text-box" style="position:relative;">
+                                <div class="card-rules">${rulesHtml}</div>
+                                ${flavorHtml}
+                                ${ptHtml}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        // ── Open pack ──
+        function openPack() {
+            if (isAnimating || allCards.length === 0) return;
+            isAnimating = true;
+
+            const pack = generatePack();
+
+            // Tear animation
+            boosterPack.classList.add('opened', 'pack-tearing');
+
+            setTimeout(() => {
+                packArea.style.display = 'none';
+                revealArea.classList.add('active');
+                revealCards.innerHTML = '';
+
+                // Track which cards are new
+                const packResults = pack.map(card => {
+                    const isNew = !collection[card.art];
+                    collection[card.art] = (collection[card.art] || 0) + 1;
+                    return { card, isNew };
+                });
+
+                packsOpened++;
+                saveState();
+                updateStats();
+
+                // Deal cards one by one
+                packResults.forEach(({ card, isNew }, i) => {
+                    const holoClass = card.rarity === 'mythic' ? 'holo-mythic'
+                                    : card.rarity === 'rare' ? 'holo-rare' : '';
+                    const glowClass = `rarity-glow-${card.rarity}`;
+                    const rarityLabel = `<span class="rarity-label rl-${card.rarity}">${card.rarity}</span>`;
+                    const newBadge = isNew ? '<span class="new-badge">New!</span>' : '';
+
+                    const flipCard = document.createElement('div');
+                    flipCard.className = `flip-card ${glowClass}`;
+                    flipCard.style.animationDelay = `${i * 0.15}s`;
+                    flipCard.dataset.rarity = card.rarity;
+
+                    flipCard.innerHTML = `
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="card-back-design">
+                                    <div class="card-back-logo"><i class="bi bi-lightning-charge-fill"></i></div>
+                                    <div class="card-back-text">Claude Code Cloud</div>
+                                </div>
+                            </div>
+                            <div class="flip-card-back">
+                                ${renderCardHTML(card)}
+                                ${holoClass ? `<div class="holo-overlay ${holoClass}"></div>` : ''}
+                                ${rarityLabel}
+                                ${newBadge}
+                            </div>
+                        </div>`;
+
+                    revealCards.appendChild(flipCard);
+
+                    // Deal animation
+                    setTimeout(() => flipCard.classList.add('dealt'), i * 150 + 50);
+
+                    // Click to flip
+                    flipCard.addEventListener('click', () => {
+                        if (!flipCard.classList.contains('flipped')) {
+                            flipCard.classList.add('flipped');
+                            onCardRevealed(card, flipCard);
+                        }
+                    });
+                });
+
+                isAnimating = false;
+            }, 800);
+        }
+
+        // ── Card reveal effects ──
+        function onCardRevealed(card, element) {
+            if (card.rarity === 'mythic') {
+                // Screen flash
+                const flash = document.createElement('div');
+                flash.className = 'screen-flash';
+                document.body.appendChild(flash);
+                setTimeout(() => flash.remove(), 700);
+
+                // Mythic orb glow
+                mythicOrb.classList.add('mythic-glow');
+                setTimeout(() => mythicOrb.classList.remove('mythic-glow'), 3000);
+
+                // Particles
+                spawnParticles(element, '#e85a20', 20);
+            } else if (card.rarity === 'rare') {
+                spawnParticles(element, '#e8c84a', 10);
+            }
+        }
+
+        function spawnParticles(element, color, count) {
+            const rect = element.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const container = document.getElementById('particleContainer');
+
+            for (let i = 0; i < count; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                const size = 3 + Math.random() * 6;
+                const angle = Math.random() * Math.PI * 2;
+                const spread = 30 + Math.random() * 80;
+                const x = cx + Math.cos(angle) * spread;
+                const y = cy + Math.sin(angle) * spread;
+                p.style.cssText = `
+                    left: ${x}px; top: ${y}px;
+                    width: ${size}px; height: ${size}px;
+                    background: ${color};
+                    box-shadow: 0 0 ${size * 2}px ${color};
+                    animation-delay: ${Math.random() * 0.3}s;
+                    animation-duration: ${0.8 + Math.random() * 0.8}s;
+                `;
+                container.appendChild(p);
+                setTimeout(() => p.remove(), 2000);
+            }
+        }
+
+        // ── Reveal all ──
+        btnRevealAll.addEventListener('click', () => {
+            const cards = revealCards.querySelectorAll('.flip-card:not(.flipped)');
+            cards.forEach((fc, i) => {
+                setTimeout(() => {
+                    fc.classList.add('flipped');
+                    const rarity = fc.dataset.rarity;
+                    const card = allCards.find(c => c.rarity === rarity);
+                    if (card) onCardRevealed(card, fc);
+                }, i * 200);
+            });
+        });
+
+        // ── Next pack ──
+        btnNextPack.addEventListener('click', () => {
+            revealArea.classList.remove('active');
+            packArea.style.display = 'flex';
+            boosterPack.classList.remove('opened', 'pack-tearing');
+            revealCards.innerHTML = '';
+        });
+
+        // ── Open pack click ──
+        boosterPack.addEventListener('click', openPack);
+
+        // ── Reset ──
+        btnReset.addEventListener('click', () => {
+            if (confirm('Reset your entire collection? This cannot be undone.')) {
+                collection = {};
+                packsOpened = 0;
+                saveState();
+                updateStats();
+                revealArea.classList.remove('active');
+                packArea.style.display = 'flex';
+                boosterPack.classList.remove('opened', 'pack-tearing');
+                revealCards.innerHTML = '';
+            }
+        });
+
+        // ── Persistence ──
+        function saveState() {
+            localStorage.setItem('cc-collection', JSON.stringify(collection));
+            localStorage.setItem('cc-packs', packsOpened.toString());
+        }
+
+        function updateStats() {
+            const unique = Object.keys(collection).length;
+            const mythicsFound = allCards.filter(c => c.rarity === 'mythic' && collection[c.art]).length;
+            const pct = allCards.length > 0 ? Math.round((unique / allCards.length) * 100) : 0;
+
+            document.getElementById('statPacks').textContent = packsOpened;
+            document.getElementById('statUnique').textContent = unique;
+            document.getElementById('statMythics').textContent = mythicsFound;
+            document.getElementById('collectionPct').textContent = pct + '%';
+            document.getElementById('collectionFill').style.width = pct + '%';
+        }
+
+        // ── Init ──
+        init();
+
+    })();
+    </script>
+</body>
+</html>
