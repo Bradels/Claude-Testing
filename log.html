@@ -104,10 +104,7 @@
         .section-label { font-size: 0.85rem; font-weight: 700; color: var(--ink-2); margin: 0 0 0.85rem; display: flex; align-items: center; gap: 0.45rem; }
         .section-label i { color: var(--accent); }
 
-        .day-top { display: grid; grid-template-columns: 260px 1fr; gap: 1.75rem; margin-bottom: 2rem; align-items: start; }
-        .day-photo { margin: 0; }
-        .day-photo img { width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--card-border); display: block; }
-        .day-photo figcaption { font-size: 0.78rem; color: var(--ink-3); margin-top: 0.5rem; }
+        .day-top { margin-bottom: 2rem; }
 
         /* ── Ranked bars ── */
         .bars { display: flex; flex-direction: column; gap: 2px; }
@@ -235,8 +232,6 @@
         @media (max-width: 700px) {
             .page-header { padding-top: 9rem; }
             .log-card { padding: 1.25rem; }
-            .day-top { grid-template-columns: 1fr; }
-            .day-photo { max-width: 320px; }
             .meters { grid-template-columns: 1fr; }
             .bar-row { grid-template-columns: 1fr auto; row-gap: 0.3rem; }
             .bar-row .bar-track { grid-column: 1 / -1; grid-row: 2; height: 14px; }
@@ -393,12 +388,6 @@
                     <td>${fmt(i.sugar)} g</td>
                 </tr>`).join('');
 
-            const photo = day.photo ? `
-                <figure class="day-photo">
-                    <img src="${esc(day.photo.src)}" alt="${esc(day.photo.alt)}" loading="lazy" width="800" height="900">
-                    <figcaption>Exhibit A.</figcaption>
-                </figure>` : '';
-
             return `
             <article class="log-card reveal">
                 <div class="card-head">
@@ -410,13 +399,10 @@
                 </div>
 
                 <div class="day-top">
-                    ${photo}
-                    <div>
-                        <p class="section-label"><i class="bi bi-bar-chart-fill"></i>Energy by item (kcal)</p>
-                        <div class="bars">${bars}</div>
-                        <div class="bar-axis"><span>0 — ${fmt(axisMax)} kcal</span></div>
-                        ${groupLine ? `<p class="callout-line">${groupLine}</p>` : ''}
-                    </div>
+                    <p class="section-label"><i class="bi bi-bar-chart-fill"></i>Energy by item (kcal)</p>
+                    <div class="bars">${bars}</div>
+                    <div class="bar-axis"><span>0 — ${fmt(axisMax)} kcal</span></div>
+                    ${groupLine ? `<p class="callout-line">${groupLine}</p>` : ''}
                 </div>
 
                 <p class="section-label"><i class="bi bi-table"></i>What I ate</p>

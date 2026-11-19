@@ -8,26 +8,73 @@
     "maintenanceNote": "Rough estimate at 116 kg; depends on height, age, sex and activity"
   },
   "weighIns": [
-    { "date": "2026-11-17", "kg": 116 }
+    {
+      "date": "2026-11-17",
+      "kg": 116
+    }
   ],
   "workouts": [
-    { "date": "2026-11-17", "focus": "Legs" },
-    { "date": "2026-11-19", "focus": "Legs" }
+    {
+      "date": "2026-11-17",
+      "focus": "Legs"
+    },
+    {
+      "date": "2026-11-19",
+      "focus": "Legs"
+    }
   ],
   "days": [
     {
       "date": "2026-11-19",
       "status": "Dinner still to come",
-      "photo": {
-        "src": "images/log/2026-11-19-snacks.jpg",
-        "alt": "An empty Freddo wrapper and an empty 35 g Maltesers Bar wrapper on a white desk"
-      },
       "items": [
-        { "name": "Maltesers Bar (35 g)", "qty": 3, "kj": 2406, "kcal": 575, "protein": 8, "sugar": 50, "note": "802 kJ each, from the wrapper", "group": "Chocolate" },
-        { "name": "Freddo (12 g Halloween size)", "qty": 4, "kj": 1080, "kcal": 260, "protein": 3, "sugar": 27, "note": "Estimate", "group": "Chocolate" },
-        { "name": "Pho, large bowl", "qty": 1, "kj": 3140, "kcal": 750, "protein": 40, "sugar": 10, "note": "Estimate, ±150 kcal" },
-        { "name": "Chinese doughnuts (youtiao)", "qty": 2, "kj": 1675, "kcal": 400, "protein": 8, "sugar": 2, "note": "Estimate, ±150 kcal; size and oil vary" },
-        { "name": "Vietnamese iced coffee", "qty": 1, "kj": 840, "kcal": 200, "protein": 4, "sugar": 30, "note": "Estimate, with condensed milk" }
+        {
+          "name": "Maltesers Bar (35 g)",
+          "qty": 3,
+          "kj": 2406,
+          "kcal": 575,
+          "protein": 8,
+          "sugar": 50,
+          "note": "802 kJ each, from the wrapper",
+          "group": "Chocolate"
+        },
+        {
+          "name": "Freddo (12 g Halloween size)",
+          "qty": 4,
+          "kj": 1080,
+          "kcal": 260,
+          "protein": 3,
+          "sugar": 27,
+          "note": "Estimate",
+          "group": "Chocolate"
+        },
+        {
+          "name": "Pho, large bowl",
+          "qty": 1,
+          "kj": 3140,
+          "kcal": 750,
+          "protein": 40,
+          "sugar": 10,
+          "note": "Estimate, ±150 kcal"
+        },
+        {
+          "name": "Chinese doughnuts (youtiao)",
+          "qty": 2,
+          "kj": 1675,
+          "kcal": 400,
+          "protein": 8,
+          "sugar": 2,
+          "note": "Estimate, ±150 kcal; size and oil vary"
+        },
+        {
+          "name": "Vietnamese iced coffee",
+          "qty": 1,
+          "kj": 840,
+          "kcal": 200,
+          "protein": 4,
+          "sugar": 30,
+          "note": "Estimate, with condensed milk"
+        }
       ],
       "range": "1,900–2,500 kcal",
       "notes": [
