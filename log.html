@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuel &amp; Lift Log — Claude Code Cloud</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #d4a574;
+            --accent-light: #e8c9a0;
+            --accent-dark: #b8875a;
+
+            /* Text tokens */
+            --ink: #ececec;
+            --ink-2: #b0b0b0;
+            --ink-3: #8a8a8a;
+
+            /* Surfaces */
+            --card: rgba(255,255,255,0.03);
+            --card-border: rgba(255,255,255,0.07);
+            --rule: rgba(255,255,255,0.07);
+
+            /* Data marks: accent ramp + its lighter track */
+            --mark: #d4a574;
+            --track: rgba(212,165,116,0.16);
+
+            /* Status (reserved, always paired with icon + label) */
+            --serious: #ec835a;
+            --serious-track: rgba(236,131,90,0.16);
+        }
+
+        body {
+            background: #060609;
+            color: var(--ink);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* ── Orbs ── */
+        .orb { position: fixed; border-radius: 50%; filter: blur(120px); opacity: 0.12; pointer-events: none; z-index: 0; }
+        .orb-1 { width: 500px; height: 500px; background: var(--accent); top: -150px; left: -100px; animation: f1 22s ease-in-out infinite; }
+        .orb-2 { width: 400px; height: 400px; background: #7c6ce0; bottom: -100px; right: -80px; animation: f2 18s ease-in-out infinite; }
+        .orb-3 { width: 350px; height: 350px; background: #4ade80; top: 60%; left: 60%; animation: f3 24s ease-in-out infinite; opacity: 0.06; }
+        @keyframes f1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(60px,80px)} }
+        @keyframes f2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-50px,-60px)} }
+        @keyframes f3 { 0%,100%{transform:translate(-50%,-50%) scale(1)} 50%{transform:translate(-50%,-50%) scale(1.2)} }
+
+        .content-wrapper { position: relative; z-index: 1; }
+
+        /* ── Navbar ── */
+        .theme-toggle {
+            width: 40px; height: 40px; border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05);
+            color: var(--accent-light); display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; cursor: pointer; transition: background 0.3s, border-color 0.3s, transform 0.3s;
+        }
+        .theme-toggle:hover { background: rgba(255,255,255,0.1); border-color: var(--accent); transform: scale(1.05); }
+        .theme-toggle .bi-sun-fill { display: none; }
+        .theme-toggle .bi-moon-stars-fill { display: inline; }
+
+        .btn-outline-accent {
+            border: 1px solid rgba(212,165,116,0.4); color: var(--accent-light);
+            padding: 0.5rem 1.25rem; font-weight: 600; border-radius: 10px; font-size: 0.85rem;
+            background: transparent; transition: background 0.2s, border-color 0.2s;
+        }
+        .btn-outline-accent:hover { background: rgba(212,165,116,0.08); border-color: var(--accent); color: var(--accent-light); }
+        .btn-outline-accent.active { background: rgba(212,165,116,0.12); border-color: var(--accent); }
+
+        /* ── Page header ── */
+        .page-header { padding: 8rem 0 2.5rem; text-align: center; }
+        .page-title { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+        .page-subtitle { color: var(--ink-3); font-size: 1.1rem; max-width: 560px; margin: 0 auto; }
+
+        .log-wrap { max-width: 920px; margin: 0 auto; padding-bottom: 5rem; }
+
+        /* ── KPI row ── */
+        .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+        .kpi {
+            background: var(--card); border: 1px solid var(--card-border); border-radius: 16px;
+            padding: 1.1rem 1.25rem;
+        }
+        .kpi-label { font-size: 0.8rem; color: var(--ink-3); margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem; }
+        .kpi-label i { color: var(--accent); }
+        .kpi-value { font-size: 1.9rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; color: var(--ink); }
+        .kpi-value small { font-size: 0.95rem; font-weight: 600; color: var(--ink-2); margin-left: 0.15rem; }
+        .kpi-sub { font-size: 0.8rem; color: var(--ink-3); margin-top: 0.3rem; }
+
+        /* ── Cards ── */
+        .log-card {
+            background: var(--card); border: 1px solid var(--card-border); border-radius: 16px;
+            padding: 2rem; margin-bottom: 2rem;
+        }
+        .card-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .card-title { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em; margin: 0; color: var(--ink); }
+        .card-kicker { font-size: 0.8rem; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-bottom: 0.25rem; }
+        .pill {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.75rem; font-weight: 600;
+            border: 1px solid rgba(212,165,116,0.35); color: var(--accent-light); background: rgba(212,165,116,0.07);
+        }
+        .section-label { font-size: 0.85rem; font-weight: 700; color: var(--ink-2); margin: 0 0 0.85rem; display: flex; align-items: center; gap: 0.45rem; }
+        .section-label i { color: var(--accent); }
+
+        .day-top { display: grid; grid-template-columns: 260px 1fr; gap: 1.75rem; margin-bottom: 2rem; align-items: start; }
+        .day-photo { margin: 0; }
+        .day-photo img { width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--card-border); display: block; }
+        .day-photo figcaption { font-size: 0.78rem; color: var(--ink-3); margin-top: 0.5rem; }
+
+        /* ── Ranked bars ── */
+        .bars { display: flex; flex-direction: column; gap: 2px; }
+        .bar-row {
+            display: grid; grid-template-columns: minmax(120px, 190px) 1fr 70px; align-items: center; gap: 0.75rem;
+            padding: 0.4rem 0.5rem; border-radius: 8px; cursor: default; outline: none;
+        }
+        .bar-row:hover, .bar-row:focus-visible { background: rgba(255,255,255,0.04); }
+        .bar-row:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
+        .bar-name { font-size: 0.88rem; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .bar-track { height: 18px; position: relative; }
+        .bar-fill { height: 100%; background: var(--mark); border-radius: 0 4px 4px 0; min-width: 2px; }
+        .bar-row:hover .bar-fill, .bar-row:focus-visible .bar-fill { background: var(--accent-light); }
+        .bar-val { font-size: 0.85rem; color: var(--ink); font-variant-numeric: tabular-nums; text-align: right; font-weight: 600; }
+        .bar-axis { display: grid; grid-template-columns: minmax(120px, 190px) 1fr 70px; gap: 0.75rem; padding: 0 0.5rem; margin-top: 0.25rem; }
+        .bar-axis span { grid-column: 2; font-size: 0.72rem; color: var(--ink-3); border-top: 1px solid var(--rule); padding-top: 0.3rem; }
+        .callout-line { font-size: 0.85rem; color: var(--ink-2); margin-top: 1rem; }
+        .callout-line strong { color: var(--ink); }
+
+        .tooltip-box {
+            position: fixed; z-index: 50; pointer-events: none; opacity: 0; transition: opacity 0.12s;
+            background: #16161c; border: 1px solid rgba(255,255,255,0.12); border-radius: 10px;
+            padding: 0.55rem 0.75rem; font-size: 0.8rem; color: var(--ink); box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            min-width: 170px;
+        }
+        .tooltip-box.show { opacity: 1; }
+        .tooltip-box .tt-title { font-weight: 700; margin-bottom: 0.3rem; }
+        .tooltip-box .tt-row { display: flex; justify-content: space-between; gap: 1rem; color: var(--ink-2); }
+        .tooltip-box .tt-row b { color: var(--ink); font-variant-numeric: tabular-nums; font-weight: 600; }
+
+        /* ── Table ── */
+        .food-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+        .food-table th {
+            font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-3);
+            font-weight: 600; padding: 0.6rem 0.6rem; border-bottom: 1px solid var(--rule); text-align: right; white-space: nowrap;
+        }
+        .food-table th:first-child, .food-table td:first-child { text-align: left; }
+        .food-table td { padding: 0.7rem 0.6rem; border-bottom: 1px solid var(--rule); color: var(--ink-2); text-align: right; vertical-align: top; }
+        .food-table td:first-child { color: var(--ink); }
+        .food-table .item-note { display: block; font-size: 0.75rem; color: var(--ink-3); margin-top: 0.15rem; }
+        .food-table tfoot td { color: var(--ink); font-weight: 700; border-bottom: none; padding-top: 0.85rem; }
+        .food-table tfoot .range { display: block; font-size: 0.75rem; color: var(--ink-3); font-weight: 400; }
+
+        /* ── Meters ── */
+        .meters { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 2rem 0; }
+        .meter-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; margin-bottom: 0.5rem; }
+        .meter-name { font-size: 0.88rem; font-weight: 600; color: var(--ink); }
+        .meter-fig { font-size: 0.88rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+        .meter-fig b { color: var(--ink); }
+        .meter-track { height: 8px; border-radius: 8px; background: var(--track); overflow: hidden; }
+        .meter-fill { height: 100%; border-radius: 8px; background: var(--mark); }
+        .meter.over .meter-track { background: var(--serious-track); }
+        .meter.over .meter-fill { background: var(--serious); }
+        .meter-sub { font-size: 0.78rem; color: var(--ink-3); margin-top: 0.45rem; display: flex; align-items: center; gap: 0.35rem; }
+        .meter.over .meter-sub .flag { color: var(--ink); font-weight: 600; display: inline-flex; align-items: center; gap: 0.3rem; }
+        .meter.over .meter-sub .flag i { color: var(--serious); }
+
+        /* ── Notes ── */
+        .notes { list-style: none; padding: 0; margin: 0 0 1.5rem; }
+        .notes li { position: relative; padding: 0.65rem 0 0.65rem 1.5rem; color: var(--ink-2); line-height: 1.7; border-bottom: 1px solid var(--rule); }
+        .notes li:last-child { border-bottom: none; }
+        .notes li::before { content: ""; position: absolute; left: 0.25rem; top: 1.3rem; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+        .notes strong { color: var(--ink); }
+
+        .plan {
+            border-left: 3px solid var(--accent); background: rgba(212,165,116,0.05);
+            border-radius: 0 10px 10px 0; padding: 1rem 1.25rem; color: var(--ink-2); line-height: 1.7;
+        }
+        .plan .plan-title { font-weight: 700; color: var(--ink); margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.45rem; }
+        .plan .plan-title i { color: var(--accent); }
+
+        /* ── Week strip ── */
+        .week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; margin-bottom: 1.5rem; }
+        .wday {
+            border: 1px solid var(--card-border); border-radius: 12px; padding: 0.75rem 0.4rem; text-align: center;
+            background: rgba(255,255,255,0.015); min-height: 112px; display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+        }
+        .wday .dname { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3); font-weight: 600; }
+        .wday .dnum { font-size: 1.15rem; font-weight: 700; color: var(--ink-2); }
+        .wday.trained { border-color: rgba(212,165,116,0.5); background: rgba(212,165,116,0.08); }
+        .wday.trained .dnum { color: var(--ink); }
+        .wday.today { box-shadow: inset 0 0 0 1px var(--accent); }
+        .wday .tag { font-size: 0.72rem; font-weight: 600; color: var(--ink); display: inline-flex; align-items: center; gap: 0.25rem; }
+        .wday .tag i { color: var(--accent); }
+        .wday .wt { font-size: 0.72rem; color: var(--ink-3); display: inline-flex; align-items: center; gap: 0.25rem; }
+        .wday .rest { font-size: 0.72rem; color: var(--ink-3); opacity: 0.6; }
+
+        .fine-print { font-size: 0.8rem; color: var(--ink-3); text-align: center; max-width: 620px; margin: 0 auto; line-height: 1.6; }
+
+        footer { border-top: 1px solid rgba(255,255,255,0.05); padding: 2rem 0; font-size: 0.85rem; color: #666; }
+
+        /* ── Reveal ── */
+        .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        /* ── Light theme ── */
+        [data-bs-theme="light"] {
+            --ink: #1a1a2e; --ink-2: #444; --ink-3: #6b6b6b;
+            --card: rgba(0,0,0,0.02); --card-border: rgba(0,0,0,0.09); --rule: rgba(0,0,0,0.08);
+            --mark: #b8875a; --track: rgba(184,135,90,0.18);
+            --serious: #d9663a; --serious-track: rgba(217,102,58,0.16);
+        }
+        [data-bs-theme="light"] body { background: #f8f7f4; }
+        [data-bs-theme="light"] .orb { opacity: 0.06; }
+        [data-bs-theme="light"] nav.navbar { background: rgba(248,247,244,0.85) !important; border-bottom-color: rgba(0,0,0,0.06) !important; }
+        [data-bs-theme="light"] .navbar-brand { color: #1a1a2e; }
+        [data-bs-theme="light"] .theme-toggle { border-color: rgba(0,0,0,0.1); background: rgba(0,0,0,0.04); color: var(--accent-dark); }
+        [data-bs-theme="light"] .theme-toggle:hover { background: rgba(0,0,0,0.08); }
+        [data-bs-theme="light"] .theme-toggle .bi-sun-fill { display: inline; }
+        [data-bs-theme="light"] .theme-toggle .bi-moon-stars-fill { display: none; }
+        [data-bs-theme="light"] .btn-outline-accent { color: var(--accent-dark); }
+        [data-bs-theme="light"] .pill { color: var(--accent-dark); }
+        [data-bs-theme="light"] .kpi-label i, [data-bs-theme="light"] .section-label i,
+        [data-bs-theme="light"] .plan .plan-title i, [data-bs-theme="light"] .wday .tag i { color: var(--accent-dark); }
+        [data-bs-theme="light"] .bar-row:hover, [data-bs-theme="light"] .bar-row:focus-visible { background: rgba(0,0,0,0.04); }
+        [data-bs-theme="light"] .bar-row:hover .bar-fill, [data-bs-theme="light"] .bar-row:focus-visible .bar-fill { background: var(--accent); }
+        [data-bs-theme="light"] .tooltip-box { background: #fff; border-color: rgba(0,0,0,0.1); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+        [data-bs-theme="light"] .wday { background: rgba(0,0,0,0.015); }
+        [data-bs-theme="light"] footer { border-top-color: rgba(0,0,0,0.06); color: #999; }
+
+        /* ── Responsive ── */
+        @media (max-width: 860px) {
+            .kpi-row { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 700px) {
+            .page-header { padding-top: 9rem; }
+            .log-card { padding: 1.25rem; }
+            .day-top { grid-template-columns: 1fr; }
+            .day-photo { max-width: 320px; }
+            .meters { grid-template-columns: 1fr; }
+            .bar-row { grid-template-columns: 1fr auto; row-gap: 0.3rem; }
+            .bar-row .bar-track { grid-column: 1 / -1; grid-row: 2; height: 14px; }
+            .bar-axis { grid-template-columns: 1fr; }
+            .bar-axis span { grid-column: 1; }
+            .week { gap: 0.3rem; }
+            .wday { padding: 0.5rem 0.15rem; min-height: 100px; }
+            .wday .wt .u { display: none; }
+            .food-table { font-size: 0.82rem; }
+            .food-table th, .food-table td { padding-left: 0.35rem; padding-right: 0.35rem; }
+        }
+        @media (max-width: 420px) {
+            .kpi-value { font-size: 1.5rem; }
+            .kpi { padding: 0.9rem 1rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .orb { animation: none !important; }
+            .reveal { opacity: 1; transform: none; transition: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="content-wrapper">
+
+        <!-- Navbar -->
+        <nav class="navbar navbar-dark fixed-top" style="background: rgba(6,6,9,0.8); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <div class="container">
+                <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
+                    <i class="bi bi-lightning-charge-fill" style="color: var(--accent);"></i>
+                    Claude Code Cloud
+                </a>
+                <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+                    <a href="index.html" class="btn btn-sm btn-outline-accent"><i class="bi bi-house me-1"></i> Home</a>
+                    <a href="claude-says.html" class="btn btn-sm btn-outline-accent"><i class="bi bi-pencil-square me-1"></i> Blog</a>
+                    <a href="cards.html" class="btn btn-sm btn-outline-accent"><i class="bi bi-suit-spade-fill me-1"></i> Cards</a>
+                    <a href="log.html" class="btn btn-sm btn-outline-accent active" aria-current="page"><i class="bi bi-heart-pulse me-1"></i> Log</a>
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <i class="bi bi-moon-stars-fill"></i>
+                        <i class="bi bi-sun-fill"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+
+            <div class="page-header reveal">
+                <h1 class="page-title">Fuel &amp; Lift Log</h1>
+                <p class="page-subtitle">What I ate, when I trained, and what the numbers say. Logged from chat; Claude does the maths.</p>
+            </div>
+
+            <div class="log-wrap" id="log">
+                <p class="fine-print">Loading log…</p>
+            </div>
+
+        </div>
+
+        <footer>
+            <div class="container text-center">
+                Energy and macros are estimates, not lab values. Not medical advice.
+            </div>
+        </footer>
+    </div>
+
+    <div class="tooltip-box" id="tooltip" role="status" aria-live="polite"></div>
+
+    <script>
+        // ── Theme toggle with localStorage persistence ──
+        const root = document.documentElement;
+        const toggle = document.getElementById('themeToggle');
+        let stored = null;
+        try { stored = localStorage.getItem('theme'); } catch (e) {}
+        if (stored) root.setAttribute('data-bs-theme', stored);
+        toggle.addEventListener('click', () => {
+            const next = root.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-bs-theme', next);
+            try { localStorage.setItem('theme', next); } catch (e) {}
+        });
+
+        // ── Helpers ──
+        const fmt = n => Math.round(n).toLocaleString('en-AU');
+        const approx = (n, step) => '~' + fmt(Math.round(n / step) * step);
+        const nice = n => n >= 100 ? Math.round(n / 5) * 5 : Math.round(n);
+        const parseDate = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+        const longDate = s => parseDate(s).toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' });
+        const shortDate = s => parseDate(s).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+        const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+        function totals(items) {
+            return items.reduce((t, i) => ({
+                kj: t.kj + i.kj, kcal: t.kcal + i.kcal, protein: t.protein + i.protein, sugar: t.sugar + i.sugar
+            }), { kj: 0, kcal: 0, protein: 0, sugar: 0 });
+        }
+
+        function weekOf(dateStr) {
+            const d = parseDate(dateStr);
+            const mon = new Date(d); mon.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+            return Array.from({ length: 7 }, (_, i) => { const x = new Date(mon); x.setDate(mon.getDate() + i); return x; });
+        }
+
+        function meter({ name, value, target, unit, sub, icon }) {
+            const pct = Math.min(100, (value / target) * 100);
+            const over = value > target;
+            const ratio = value / target;
+            const flag = over
+                ? `<span class="flag"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>${ratio.toFixed(1)}× the guideline</span> · ${esc(sub)}`
+                : `${Math.round(ratio * 100)}% of target · ${esc(sub)}`;
+            return `
+                <div class="meter${over ? ' over' : ''}">
+                    <div class="meter-head">
+                        <span class="meter-name"><i class="bi ${icon} me-1" aria-hidden="true"></i>${esc(name)}</span>
+                        <span class="meter-fig"><b>~${fmt(nice(value))} ${unit}</b> / ${fmt(target)} ${unit}</span>
+                    </div>
+                    <div class="meter-track" role="meter" aria-valuemin="0" aria-valuemax="${target}" aria-valuenow="${value}"
+                         aria-label="${esc(name)}: about ${fmt(nice(value))} ${unit} of ${fmt(target)} ${unit}">
+                        <div class="meter-fill" style="width:${pct}%"></div>
+                    </div>
+                    <div class="meter-sub">${flag}</div>
+                </div>`;
+        }
+
+        function renderDay(day, data) {
+            const t = totals(day.items);
+            const ranked = [...day.items].sort((a, b) => b.kcal - a.kcal);
+            const max = ranked[0].kcal;
+            const axisMax = Math.ceil(max / 250) * 250;
+
+            const groups = {};
+            day.items.forEach(i => { if (i.group) groups[i.group] = (groups[i.group] || 0) + i.kcal; });
+            const groupLine = Object.entries(groups).map(([g, k]) =>
+                `<strong>${esc(g)}:</strong> ${fmt(k)} kcal, ${Math.round(k / t.kcal * 100)}% of the day so far.`).join(' ');
+
+            const bars = ranked.map(i => `
+                <div class="bar-row" tabindex="0" data-name="${esc(i.name)}" data-qty="${i.qty}" data-kcal="${i.kcal}" data-kj="${i.kj}"
+                     data-share="${Math.round(i.kcal / t.kcal * 100)}" data-protein="${i.protein}"
+                     aria-label="${esc(i.name)}, ${i.qty} serve${i.qty > 1 ? 's' : ''}: ${fmt(i.kcal)} kcal, ${Math.round(i.kcal / t.kcal * 100)}% of the day">
+                    <span class="bar-name">${i.qty > 1 ? i.qty + ' × ' : ''}${esc(i.name.replace(/\s*\(.*\)$/, ''))}</span>
+                    <span class="bar-track"><span class="bar-fill d-block" style="width:${(i.kcal / axisMax) * 100}%"></span></span>
+                    <span class="bar-val">${fmt(i.kcal)}</span>
+                </div>`).join('');
+
+            const rows = day.items.map(i => `
+                <tr>
+                    <td>${i.qty > 1 ? i.qty + ' × ' : ''}${esc(i.name)}<span class="item-note">${esc(i.note || '')}</span></td>
+                    <td>${fmt(i.kj)}</td>
+                    <td>${fmt(i.kcal)}</td>
+                    <td>${fmt(i.protein)} g</td>
+                    <td>${fmt(i.sugar)} g</td>
+                </tr>`).join('');
+
+            const photo = day.photo ? `
+                <figure class="day-photo">
+                    <img src="${esc(day.photo.src)}" alt="${esc(day.photo.alt)}" loading="lazy" width="800" height="900">
+                    <figcaption>Exhibit A.</figcaption>
+                </figure>` : '';
+
+            return `
+            <article class="log-card reveal">
+                <div class="card-head">
+                    <div>
+                        <div class="card-kicker">Food</div>
+                        <h2 class="card-title">${longDate(day.date)}</h2>
+                    </div>
+                    ${day.status ? `<span class="pill"><i class="bi bi-hourglass-split"></i>${esc(day.status)}</span>` : ''}
+                </div>
+
+                <div class="day-top">
+                    ${photo}
+                    <div>
+                        <p class="section-label"><i class="bi bi-bar-chart-fill"></i>Energy by item (kcal)</p>
+                        <div class="bars">${bars}</div>
+                        <div class="bar-axis"><span>0 — ${fmt(axisMax)} kcal</span></div>
+                        ${groupLine ? `<p class="callout-line">${groupLine}</p>` : ''}
+                    </div>
+                </div>
+
+                <p class="section-label"><i class="bi bi-table"></i>What I ate</p>
+                <div class="table-responsive">
+                    <table class="food-table">
+                        <thead><tr><th>Item</th><th>kJ</th><th>kcal</th><th>Protein</th><th>Sugar</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                        <tfoot><tr>
+                            <td>Total so far${day.range ? `<span class="range">Realistic range: ${esc(day.range)}</span>` : ''}</td>
+                            <td>${approx(t.kj, 100)}</td>
+                            <td>${approx(t.kcal, 50)}</td>
+                            <td>~${fmt(nice(t.protein))} g</td>
+                            <td>~${fmt(nice(t.sugar))} g</td>
+                        </tr></tfoot>
+                    </table>
+                </div>
+
+                <div class="meters">
+                    ${meter({ name: 'Protein', value: t.protein, target: data.targets.proteinG, unit: 'g', sub: data.targets.proteinNote, icon: 'bi-egg-fried' })}
+                    ${meter({ name: 'Sugar', value: t.sugar, target: data.targets.sugarG, unit: 'g', sub: data.targets.sugarNote, icon: 'bi-cup-straw' })}
+                </div>
+
+                <p class="section-label"><i class="bi bi-chat-square-text"></i>Claude's take</p>
+                <ul class="notes">${day.notes.map(n => `<li>${n}</li>`).join('')}</ul>
+
+                ${day.plan ? `<div class="plan"><div class="plan-title"><i class="bi bi-clipboard-check"></i>Dinner plan</div>${esc(day.plan)}</div>` : ''}
+            </article>`;
+        }
+
+        function renderWeek(data, anchor, trainingNote) {
+            const days = weekOf(anchor);
+            const workouts = Object.fromEntries(data.workouts.map(w => [w.date, w]));
+            const weighs = Object.fromEntries(data.weighIns.map(w => [w.date, w]));
+            const cells = days.map(d => {
+                const k = iso(d);
+                const w = workouts[k], wt = weighs[k];
+                return `
+                <div class="wday${w ? ' trained' : ''}${k === anchor ? ' today' : ''}">
+                    <span class="dname">${d.toLocaleDateString('en-AU', { weekday: 'short' })}</span>
+                    <span class="dnum">${d.getDate()}</span>
+                    ${w ? `<span class="tag"><i class="bi bi-lightning-fill"></i>${esc(w.focus)}</span>` : (d <= parseDate(anchor) ? '<span class="rest">Rest</span>' : '')}
+                    ${wt ? `<span class="wt"><i class="bi bi-speedometer2"></i><span>${wt.kg}<span class="u"> kg</span></span></span>` : ''}
+                </div>`;
+            }).join('');
+            const first = days[0], last = days[6];
+            const range = `${first.getDate()} ${first.toLocaleDateString('en-AU', { month: 'short' })} – ${last.getDate()} ${last.toLocaleDateString('en-AU', { month: 'short' })}`;
+            return `
+            <article class="log-card reveal">
+                <div class="card-head">
+                    <div>
+                        <div class="card-kicker">Training</div>
+                        <h2 class="card-title">Week of ${range}</h2>
+                    </div>
+                    <span class="pill"><i class="bi bi-lightning-fill"></i>${data.workouts.filter(w => days.some(d => iso(d) === w.date)).length} sessions</span>
+                </div>
+                <div class="week">${cells}</div>
+                ${trainingNote ? `<div class="plan"><div class="plan-title"><i class="bi bi-arrow-repeat"></i>Next session</div>${esc(trainingNote)}</div>` : ''}
+            </article>`;
+        }
+
+        function renderKpis(data, day) {
+            const t = totals(day.items);
+            const latestW = [...data.weighIns].sort((a, b) => b.date.localeCompare(a.date))[0];
+            const week = weekOf(day.date).map(iso);
+            const wk = data.workouts.filter(w => week.includes(w.date));
+            return `
+            <div class="kpi-row reveal">
+                <div class="kpi">
+                    <div class="kpi-label"><i class="bi bi-speedometer2"></i>Weight</div>
+                    <div class="kpi-value">${latestW.kg}<small>kg</small></div>
+                    <div class="kpi-sub">Weighed ${shortDate(latestW.date)}</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-label"><i class="bi bi-fire"></i>Energy so far</div>
+                    <div class="kpi-value">${approx(t.kcal, 50)}<small>kcal</small></div>
+                    <div class="kpi-sub">${approx(t.kj, 100)} kJ · ${day.status ? 'dinner to come' : 'full day'}</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-label"><i class="bi bi-egg-fried"></i>Protein so far</div>
+                    <div class="kpi-value">~${fmt(t.protein)}<small>g</small></div>
+                    <div class="kpi-sub">Target ~${data.targets.proteinG} g a day</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-label"><i class="bi bi-lightning-fill"></i>Sessions this week</div>
+                    <div class="kpi-value">${wk.length}</div>
+                    <div class="kpi-sub">${wk.map(w => `${esc(w.focus)} (${parseDate(w.date).toLocaleDateString('en-AU', { weekday: 'short' })})`).join(', ')}</div>
+                </div>
+            </div>`;
+        }
+
+        // ── Tooltip for ranked bars ──
+        const tip = document.getElementById('tooltip');
+        function showTip(row, x, y) {
+            const d = row.dataset;
+            tip.innerHTML = `
+                <div class="tt-title">${d.qty > 1 ? d.qty + ' × ' : ''}${d.name}</div>
+                <div class="tt-row"><span>Energy</span><b>${fmt(+d.kcal)} kcal</b></div>
+                <div class="tt-row"><span>Kilojoules</span><b>${fmt(+d.kj)} kJ</b></div>
+                <div class="tt-row"><span>Share of day</span><b>${d.share}%</b></div>
+                <div class="tt-row"><span>Protein</span><b>${d.protein} g</b></div>`;
+            const w = tip.offsetWidth || 180, h = tip.offsetHeight || 110;
+            let left = x + 14, top = y - h - 10;
+            if (left + w > window.innerWidth - 8) left = x - w - 14;
+            if (left < 8) left = 8;
+            if (top < 70) top = y + 18;
+            tip.style.left = left + 'px'; tip.style.top = top + 'px';
+            tip.classList.add('show');
+        }
+        function hideTip() { tip.classList.remove('show'); }
+        function wireBars() {
+            document.querySelectorAll('.bar-row').forEach(row => {
+                row.addEventListener('mousemove', e => showTip(row, e.clientX, e.clientY));
+                row.addEventListener('mouseleave', hideTip);
+                row.addEventListener('focus', () => { const r = row.getBoundingClientRect(); showTip(row, r.left + r.width * 0.6, r.top); });
+                row.addEventListener('blur', hideTip);
+            });
+            window.addEventListener('scroll', hideTip, { passive: true });
+        }
+
+        // ── Scroll reveal ──
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+        }, { threshold: 0.1 });
+
+        // ── Load ──
+        (async () => {
+            const el = document.getElementById('log');
+            try {
+                const res = await fetch('data/log.json', { cache: 'no-cache' });
+                if (!res.ok) throw new Error(res.status);
+                const data = await res.json();
+                const days = [...data.days].sort((a, b) => b.date.localeCompare(a.date));
+                const latest = days[0];
+                el.innerHTML =
+                    renderKpis(data, latest) +
+                    days.map(d => renderDay(d, data)).join('') +
+                    renderWeek(data, latest.date, latest.training) +
+                    `<p class="fine-print reveal">Rough maintenance at this weight: ${esc(data.targets.maintenanceKcal)} kcal a day (${esc(data.targets.maintenanceNote.toLowerCase())}). Entries live in <code>data/log.json</code>.</p>`;
+                wireBars();
+                document.querySelectorAll('.reveal').forEach(n => observer.observe(n));
+            } catch (err) {
+                el.innerHTML = '<p class="fine-print">Could not load the log. Make sure <code>data/log.json</code> exists.</p>';
+            }
+            document.querySelectorAll('.page-header.reveal').forEach(n => observer.observe(n));
+        })();
+    </script>
+</body>
+</html>

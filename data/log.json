@@ -1,0 +1,43 @@
+{
+  "targets": {
+    "proteinG": 150,
+    "proteinNote": "About 1.3 g per kg at 116 kg",
+    "sugarG": 50,
+    "sugarNote": "Common daily guideline for added sugar",
+    "maintenanceKcal": "2,500–3,000",
+    "maintenanceNote": "Rough estimate at 116 kg; depends on height, age, sex and activity"
+  },
+  "weighIns": [
+    { "date": "2026-11-17", "kg": 116 }
+  ],
+  "workouts": [
+    { "date": "2026-11-17", "focus": "Legs" },
+    { "date": "2026-11-19", "focus": "Legs" }
+  ],
+  "days": [
+    {
+      "date": "2026-11-19",
+      "status": "Dinner still to come",
+      "photo": {
+        "src": "images/log/2026-11-19-snacks.jpg",
+        "alt": "An empty Freddo wrapper and an empty 35 g Maltesers Bar wrapper on a white desk"
+      },
+      "items": [
+        { "name": "Maltesers Bar (35 g)", "qty": 3, "kj": 2406, "kcal": 575, "protein": 8, "sugar": 50, "note": "802 kJ each, from the wrapper", "group": "Chocolate" },
+        { "name": "Freddo (12 g Halloween size)", "qty": 4, "kj": 1080, "kcal": 260, "protein": 3, "sugar": 27, "note": "Estimate", "group": "Chocolate" },
+        { "name": "Pho, large bowl", "qty": 1, "kj": 3140, "kcal": 750, "protein": 40, "sugar": 10, "note": "Estimate, ±150 kcal" },
+        { "name": "Chinese doughnuts (youtiao)", "qty": 2, "kj": 1675, "kcal": 400, "protein": 8, "sugar": 2, "note": "Estimate, ±150 kcal; size and oil vary" },
+        { "name": "Vietnamese iced coffee", "qty": 1, "kj": 840, "kcal": 200, "protein": 4, "sugar": 30, "note": "Estimate, with condensed milk" }
+      ],
+      "range": "1,900–2,500 kcal",
+      "notes": [
+        "<strong>Chocolate:</strong> the seven bars come to about 835 kcal, roughly 38% of the day so far. They're also most of the ~120 g of sugar, more than double the usual ~50 g daily guideline.",
+        "<strong>Protein:</strong> about 63 g, mostly from the pho. At 116 kg, roughly 150 g a day (about 1.3 g per kg) is a sensible target for someone lifting twice a week, so today is about 40% of the way there with one meal left.",
+        "<strong>Energy:</strong> maintenance at 116 kg is probably somewhere around 2,500–3,000 kcal a day, depending on height, age and activity. At ~2,200 kcal so far, dinner decides whether today lands under or at maintenance.",
+        "<strong>Accuracy:</strong> the pho and doughnuts are the big unknowns (±150 kcal each). A realistic range for the day so far is 1,900–2,500 kcal."
+      ],
+      "plan": "Make dinner protein-first and low in sugar: about 200 g of cooked chicken breast, lean steak or fish (~60 g protein) with rice and veg. That's around 600 kcal and ends the day near 2,800 kcal and ~130 g of protein. If the goal is weight loss, go lighter on the rice and keep dinner closer to 400 kcal.",
+      "training": "Legs twice this week with a rest day in between is good frequency. Make the next session upper body so your legs get 48–72 hours to recover."
+    }
+  ]
+}
