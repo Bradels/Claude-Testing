@@ -164,6 +164,67 @@
         "title": "Takeaway",
         "text": "Swapping just the chocolate for two protein yoghurts would have saved ~500 kcal and ~40 g of fat and added ~25 g of protein, landing the day right around 2,800."
       }
+    },
+    {
+      "date": "2026-11-20",
+      "status": "Dinner still to come",
+      "items": [
+        {
+          "name": "Nescafé Caramel Latte sachet",
+          "qty": 1,
+          "kj": 300,
+          "kcal": 72,
+          "protein": 1,
+          "carbs": 12,
+          "fat": 2,
+          "sugar": 9,
+          "note": "Breakfast. 300 kJ / 72 kcal from the box; macros estimated"
+        },
+        {
+          "name": "Sugar (teaspoons)",
+          "qty": 4,
+          "kj": 268,
+          "kcal": 64,
+          "protein": 0,
+          "carbs": 16,
+          "fat": 0,
+          "sugar": 16,
+          "note": "Breakfast. Estimate, ~4 g per teaspoon"
+        },
+        {
+          "name": "Milk, splash",
+          "qty": 1,
+          "kj": 85,
+          "kcal": 20,
+          "protein": 1,
+          "carbs": 2,
+          "fat": 1,
+          "sugar": 2,
+          "note": "Breakfast. Estimate, ~30 ml full cream"
+        },
+        {
+          "name": "Subway Sweet Onion Chicken Teriyaki (footlong)",
+          "qty": 1,
+          "kj": 3010,
+          "kcal": 720,
+          "protein": 50,
+          "carbs": 110,
+          "fat": 10,
+          "sugar": 32,
+          "note": "Lunch. Malted rye, salad, sweet onion sauce. Estimate; assumed footlong"
+        }
+      ],
+      "range": "800–950 kcal",
+      "notes": [
+        "<strong>Breakfast:</strong> a caramel latte sachet with ~4 teaspoons of sugar and a splash of milk. Only ~155 kcal, but ~27 g of sugar and almost no protein (~2 g). The sachet is already sweetened, so the extra sugar more than doubles it.",
+        "<strong>Lunch:</strong> a footlong Sweet Onion Chicken Teriyaki on malted rye. About 720 kcal and ~50 g of protein with only ~10 g of fat. A strong pick.",
+        "<strong>Still to go:</strong> about 1,825–2,025 kcal, ~128 g of protein, ~160–200 g of carbs and ~57–67 g of fat.",
+        "<strong>Accuracy:</strong> the sachet's energy is from the box. Its macros, the sugar, the milk and the sub are estimates, and the sub is assumed to be a footlong."
+      ],
+      "callout": {
+        "title": "Rest of today",
+        "text": "Protein is the gap: ~128 g to go. Tuna this afternoon (~25 g), a big dinner built around ~250 g of cooked chicken breast or lean beef with rice and veg (~85 g), and a protein yoghurt or protein milk tonight (~25 g) covers it. There's plenty of energy left, so make dinner a proper meal. Eating well under 2,800 is off-plan too."
+      }
     }
   ]
 }
