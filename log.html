@@ -26,10 +26,12 @@
             /* Data marks: accent ramp + its lighter track */
             --mark: #d4a574;
             --track: rgba(212,165,116,0.16);
+            --band: rgba(212,165,116,0.34);
 
             /* Status (reserved, always paired with icon + label) */
             --serious: #ec835a;
-            --serious-track: rgba(236,131,90,0.16);
+            --good: #0ca30c;
+            --good-ink: #0ca30c;
         }
 
         body {
@@ -144,6 +146,7 @@
         .food-table th:first-child, .food-table td:first-child { text-align: left; }
         .food-table td { padding: 0.7rem 0.6rem; border-bottom: 1px solid var(--rule); color: var(--ink-2); text-align: right; vertical-align: top; }
         .food-table td:first-child { color: var(--ink); }
+        .food-table td:not(:first-child), .food-table th { white-space: nowrap; }
         .food-table .item-note { display: block; font-size: 0.75rem; color: var(--ink-3); margin-top: 0.15rem; }
         .food-table tfoot td { color: var(--ink); font-weight: 700; border-bottom: none; padding-top: 0.85rem; }
         .food-table tfoot .range { display: block; font-size: 0.75rem; color: var(--ink-3); font-weight: 400; }
@@ -154,13 +157,28 @@
         .meter-name { font-size: 0.88rem; font-weight: 600; color: var(--ink); }
         .meter-fig { font-size: 0.88rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
         .meter-fig b { color: var(--ink); }
-        .meter-track { height: 8px; border-radius: 8px; background: var(--track); overflow: hidden; }
-        .meter-fill { height: 100%; border-radius: 8px; background: var(--mark); }
-        .meter.over .meter-track { background: var(--serious-track); }
+        .meter-track { height: 8px; border-radius: 8px; background: var(--track); position: relative; }
+        .meter-band { position: absolute; top: 0; bottom: 0; background: var(--band); }
+        .meter-fill { position: absolute; left: 0; top: 0; height: 100%; border-radius: 8px; background: var(--mark); }
+        .meter-tick { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--ink-2); border-radius: 1px; z-index: 1; }
         .meter.over .meter-fill { background: var(--serious); }
-        .meter-sub { font-size: 0.78rem; color: var(--ink-3); margin-top: 0.45rem; display: flex; align-items: center; gap: 0.35rem; }
-        .meter.over .meter-sub .flag { color: var(--ink); font-weight: 600; display: inline-flex; align-items: center; gap: 0.3rem; }
+        .meter.good .meter-fill { background: var(--good); }
+        .meter-sub { font-size: 0.78rem; color: var(--ink-3); margin-top: 0.55rem; display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
+        .meter-sub .flag { color: var(--ink); font-weight: 600; display: inline-flex; align-items: center; gap: 0.3rem; }
         .meter.over .meter-sub .flag i { color: var(--serious); }
+        .meter.good .meter-sub .flag i { color: var(--good-ink); }
+        .meter-legend { font-size: 0.75rem; color: var(--ink-3); display: flex; align-items: center; gap: 0.4rem; margin-top: -0.75rem; margin-bottom: 1.75rem; }
+        .meter-legend .swatch { display: inline-block; width: 2px; height: 12px; background: var(--ink-2); border-radius: 1px; }
+
+        /* ── Plan card ── */
+        .plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem 2rem; margin-bottom: 1.5rem; }
+        .target-list { list-style: none; padding: 0; margin: 0; }
+        .target-list li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.55rem 0; border-bottom: 1px solid var(--rule); font-size: 0.92rem; }
+        .target-list li:last-child { border-bottom: none; }
+        .target-list .t-name { color: var(--ink-2); display: inline-flex; align-items: center; gap: 0.45rem; }
+        .target-list .t-name i { color: var(--accent); }
+        .target-list .t-val { color: var(--ink); font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+        .target-list .t-val small { display: block; font-weight: 400; color: var(--ink-3); font-size: 0.75rem; }
 
         /* ── Notes ── */
         .notes { list-style: none; padding: 0; margin: 0 0 1.5rem; }
@@ -191,6 +209,7 @@
         .wday .tag i { color: var(--accent); }
         .wday .wt { font-size: 0.72rem; color: var(--ink-3); display: inline-flex; align-items: center; gap: 0.25rem; }
         .wday .rest { font-size: 0.72rem; color: var(--ink-3); opacity: 0.6; }
+        .wday.cardio { border-color: rgba(212,165,116,0.5); }
 
         .fine-print { font-size: 0.8rem; color: var(--ink-3); text-align: center; max-width: 620px; margin: 0 auto; line-height: 1.6; }
 
@@ -205,7 +224,8 @@
             --ink: #1a1a2e; --ink-2: #444; --ink-3: #6b6b6b;
             --card: rgba(0,0,0,0.02); --card-border: rgba(0,0,0,0.09); --rule: rgba(0,0,0,0.08);
             --mark: #b8875a; --track: rgba(184,135,90,0.18);
-            --serious: #d9663a; --serious-track: rgba(217,102,58,0.16);
+            --band: rgba(184,135,90,0.38);
+            --serious: #d9663a; --good: #0ca30c; --good-ink: #006300;
         }
         [data-bs-theme="light"] body { background: #f8f7f4; }
         [data-bs-theme="light"] .orb { opacity: 0.06; }
@@ -218,7 +238,8 @@
         [data-bs-theme="light"] .btn-outline-accent { color: var(--accent-dark); }
         [data-bs-theme="light"] .pill { color: var(--accent-dark); }
         [data-bs-theme="light"] .kpi-label i, [data-bs-theme="light"] .section-label i,
-        [data-bs-theme="light"] .plan .plan-title i, [data-bs-theme="light"] .wday .tag i { color: var(--accent-dark); }
+        [data-bs-theme="light"] .plan .plan-title i, [data-bs-theme="light"] .wday .tag i,
+        [data-bs-theme="light"] .target-list .t-name i { color: var(--accent-dark); }
         [data-bs-theme="light"] .bar-row:hover, [data-bs-theme="light"] .bar-row:focus-visible { background: rgba(0,0,0,0.04); }
         [data-bs-theme="light"] .bar-row:hover .bar-fill, [data-bs-theme="light"] .bar-row:focus-visible .bar-fill { background: var(--accent); }
         [data-bs-theme="light"] .tooltip-box { background: #fff; border-color: rgba(0,0,0,0.1); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
@@ -233,6 +254,7 @@
             .page-header { padding-top: 9rem; }
             .log-card { padding: 1.25rem; }
             .meters { grid-template-columns: 1fr; }
+            .plan-grid { grid-template-columns: 1fr; }
             .bar-row { grid-template-columns: 1fr auto; row-gap: 0.3rem; }
             .bar-row .bar-track { grid-column: 1 / -1; grid-row: 2; height: 14px; }
             .bar-axis { grid-template-columns: 1fr; }
@@ -242,6 +264,7 @@
             .wday .wt .u { display: none; }
             .food-table { font-size: 0.82rem; }
             .food-table th, .food-table td { padding-left: 0.35rem; padding-right: 0.35rem; }
+            .food-table td:first-child { min-width: 170px; }
         }
         @media (max-width: 420px) {
             .kpi-value { font-size: 1.5rem; }
@@ -319,17 +342,18 @@
         // ── Helpers ──
         const fmt = n => Math.round(n).toLocaleString('en-AU');
         const approx = (n, step) => '~' + fmt(Math.round(n / step) * step);
-        const nice = n => n >= 100 ? Math.round(n / 5) * 5 : Math.round(n);
+        const nice = n => Math.round(n);
         const parseDate = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
         const longDate = s => parseDate(s).toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' });
         const shortDate = s => parseDate(s).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
         const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+        const KEYS = ['kj', 'kcal', 'protein', 'carbs', 'fat', 'sugar'];
         function totals(items) {
-            return items.reduce((t, i) => ({
-                kj: t.kj + i.kj, kcal: t.kcal + i.kcal, protein: t.protein + i.protein, sugar: t.sugar + i.sugar
-            }), { kj: 0, kcal: 0, protein: 0, sugar: 0 });
+            const t = Object.fromEntries(KEYS.map(k => [k, 0]));
+            items.forEach(i => KEYS.forEach(k => { t[k] += i[k] || 0; }));
+            return t;
         }
 
         function weekOf(dateStr) {
@@ -338,42 +362,54 @@
             return Array.from({ length: 7 }, (_, i) => { const x = new Date(mon); x.setDate(mon.getDate() + i); return x; });
         }
 
-        function meter({ name, value, target, unit, sub, icon }) {
-            const pct = Math.min(100, (value / target) * 100);
-            const over = value > target;
-            const ratio = value / target;
-            const flag = over
-                ? `<span class="flag"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>${ratio.toFixed(1)}× the guideline</span> · ${esc(sub)}`
-                : `${Math.round(ratio * 100)}% of target · ${esc(sub)}`;
+        // Meter against a target: a band for a range (lo–hi) or a tick for a minimum (lo only).
+        function meter({ name, icon, value, lo, hi, unit, done, dp = 0, exact = false }) {
+            const num = v => dp ? v.toFixed(dp) : fmt(nice(v));
+            const est = exact ? '' : '~';
+            const top = hi ?? lo;
+            const scale = Math.max(top, value) * 1.15;
+            const pos = v => Math.min(100, (v / scale) * 100);
+            const state = hi != null && value > hi ? 'over' : value >= lo ? 'good' : 'under';
+            const targetTxt = hi != null ? `${fmt(lo)}–${fmt(hi)}` : `${fmt(lo)}+`;
+            const sp = ' ';
+            const flag = state === 'over'
+                ? `<span class="flag"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>${num(value - hi)}${sp}${unit} over</span>`
+                : state === 'good'
+                    ? `<span class="flag"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>On target</span>`
+                    : `${num(lo - value)}${sp}${unit} ${done ? 'short' : 'to go'}`;
+            const band = hi != null ? `<span class="meter-band" style="left:${pos(lo)}%;width:${pos(hi) - pos(lo)}%"></span>` : '';
+            const ticks = (hi != null ? [lo, hi] : [lo]).map(v => `<span class="meter-tick" style="left:${pos(v)}%"></span>`).join('');
             return `
-                <div class="meter${over ? ' over' : ''}">
+                <div class="meter ${state}">
                     <div class="meter-head">
                         <span class="meter-name"><i class="bi ${icon} me-1" aria-hidden="true"></i>${esc(name)}</span>
-                        <span class="meter-fig"><b>~${fmt(nice(value))} ${unit}</b> / ${fmt(target)} ${unit}</span>
+                        <span class="meter-fig"><b>${est}${num(value)}${sp}${unit}</b> / ${targetTxt}${sp}${unit}</span>
                     </div>
-                    <div class="meter-track" role="meter" aria-valuemin="0" aria-valuemax="${target}" aria-valuenow="${value}"
-                         aria-label="${esc(name)}: about ${fmt(nice(value))} ${unit} of ${fmt(target)} ${unit}">
-                        <div class="meter-fill" style="width:${pct}%"></div>
+                    <div class="meter-track" role="meter" aria-valuemin="0" aria-valuemax="${Math.round(scale)}" aria-valuenow="${value}"
+                         aria-label="${esc(name)}: about ${num(value)} ${unit}, target ${targetTxt} ${unit}">
+                        ${band}<span class="meter-fill" style="width:${pos(value)}%"></span>${ticks}
                     </div>
                     <div class="meter-sub">${flag}</div>
                 </div>`;
         }
 
         function renderDay(day, data) {
+            const T = data.targets;
             const t = totals(day.items);
+            const done = !day.status;
             const ranked = [...day.items].sort((a, b) => b.kcal - a.kcal);
-            const max = ranked[0].kcal;
-            const axisMax = Math.ceil(max / 250) * 250;
+            const axisMax = Math.ceil(ranked[0].kcal / 250) * 250;
+            const share = i => Math.round(i.kcal / t.kcal * 100);
 
             const groups = {};
             day.items.forEach(i => { if (i.group) groups[i.group] = (groups[i.group] || 0) + i.kcal; });
             const groupLine = Object.entries(groups).map(([g, k]) =>
-                `<strong>${esc(g)}:</strong> ${fmt(k)} kcal, ${Math.round(k / t.kcal * 100)}% of the day so far.`).join(' ');
+                `<strong>${esc(g)}:</strong> ${fmt(k)} kcal, ${Math.round(k / t.kcal * 100)}% of the day${done ? '' : ' so far'}.`).join(' ');
 
             const bars = ranked.map(i => `
                 <div class="bar-row" tabindex="0" data-name="${esc(i.name)}" data-qty="${i.qty}" data-kcal="${i.kcal}" data-kj="${i.kj}"
-                     data-share="${Math.round(i.kcal / t.kcal * 100)}" data-protein="${i.protein}"
-                     aria-label="${esc(i.name)}, ${i.qty} serve${i.qty > 1 ? 's' : ''}: ${fmt(i.kcal)} kcal, ${Math.round(i.kcal / t.kcal * 100)}% of the day">
+                     data-share="${share(i)}" data-protein="${i.protein}" data-fat="${i.fat}"
+                     aria-label="${esc(i.name)}, ${i.qty} serve${i.qty > 1 ? 's' : ''}: ${fmt(i.kcal)} kcal, ${share(i)}% of the day">
                     <span class="bar-name">${i.qty > 1 ? i.qty + ' × ' : ''}${esc(i.name.replace(/\s*\(.*\)$/, ''))}</span>
                     <span class="bar-track"><span class="bar-fill d-block" style="width:${(i.kcal / axisMax) * 100}%"></span></span>
                     <span class="bar-val">${fmt(i.kcal)}</span>
@@ -385,8 +421,18 @@
                     <td>${fmt(i.kj)}</td>
                     <td>${fmt(i.kcal)}</td>
                     <td>${fmt(i.protein)} g</td>
+                    <td>${fmt(i.carbs)} g</td>
+                    <td>${fmt(i.fat)} g</td>
                     <td>${fmt(i.sugar)} g</td>
                 </tr>`).join('');
+
+            const meters = [
+                meter({ name: 'Energy', icon: 'bi-fire', value: t.kcal, lo: T.kcal.lo, hi: T.kcal.hi, unit: 'kcal', done }),
+                meter({ name: 'Protein', icon: 'bi-egg-fried', value: t.protein, lo: T.protein.lo, unit: 'g', done }),
+                meter({ name: 'Carbs', icon: 'bi-basket', value: t.carbs, lo: T.carbs.lo, hi: T.carbs.hi, unit: 'g', done }),
+                meter({ name: 'Fat', icon: 'bi-droplet-half', value: t.fat, lo: T.fat.lo, hi: T.fat.hi, unit: 'g', done }),
+            ];
+            if (day.waterL != null) meters.push(meter({ name: 'Water', icon: 'bi-droplet-fill', value: day.waterL, lo: T.waterL.lo, unit: 'L', done, dp: 1 }));
 
             return `
             <article class="log-card reveal">
@@ -395,7 +441,9 @@
                         <div class="card-kicker">Food</div>
                         <h2 class="card-title">${longDate(day.date)}</h2>
                     </div>
-                    ${day.status ? `<span class="pill"><i class="bi bi-hourglass-split"></i>${esc(day.status)}</span>` : ''}
+                    ${day.status
+                        ? `<span class="pill"><i class="bi bi-hourglass-split"></i>${esc(day.status)}</span>`
+                        : `<span class="pill"><i class="bi bi-check2"></i>Full day</span>`}
                 </div>
 
                 <div class="day-top">
@@ -408,45 +456,57 @@
                 <p class="section-label"><i class="bi bi-table"></i>What I ate</p>
                 <div class="table-responsive">
                     <table class="food-table">
-                        <thead><tr><th>Item</th><th>kJ</th><th>kcal</th><th>Protein</th><th>Sugar</th></tr></thead>
+                        <thead><tr><th>Item</th><th>kJ</th><th>kcal</th><th>Protein</th><th>Carbs</th><th>Fat</th><th>Sugar</th></tr></thead>
                         <tbody>${rows}</tbody>
                         <tfoot><tr>
-                            <td>Total so far${day.range ? `<span class="range">Realistic range: ${esc(day.range)}</span>` : ''}</td>
+                            <td>${done ? 'Total' : 'Total so far'}${day.range ? `<span class="range">Realistic range: ${esc(day.range)}</span>` : ''}</td>
                             <td>${approx(t.kj, 100)}</td>
-                            <td>${approx(t.kcal, 50)}</td>
+                            <td>~${fmt(nice(t.kcal))}</td>
                             <td>~${fmt(nice(t.protein))} g</td>
+                            <td>~${fmt(nice(t.carbs))} g</td>
+                            <td>~${fmt(nice(t.fat))} g</td>
                             <td>~${fmt(nice(t.sugar))} g</td>
                         </tr></tfoot>
                     </table>
                 </div>
 
-                <div class="meters">
-                    ${meter({ name: 'Protein', value: t.protein, target: data.targets.proteinG, unit: 'g', sub: data.targets.proteinNote, icon: 'bi-egg-fried' })}
-                    ${meter({ name: 'Sugar', value: t.sugar, target: data.targets.sugarG, unit: 'g', sub: data.targets.sugarNote, icon: 'bi-cup-straw' })}
-                </div>
+                <p class="section-label mt-4"><i class="bi bi-bullseye"></i>Against the plan</p>
+                <div class="meters">${meters.join('')}</div>
+                <div class="meter-legend"><span class="swatch"></span>Marks show the target; the shaded band is the target range.</div>
 
                 <p class="section-label"><i class="bi bi-chat-square-text"></i>Claude's take</p>
                 <ul class="notes">${day.notes.map(n => `<li>${n}</li>`).join('')}</ul>
 
-                ${day.plan ? `<div class="plan"><div class="plan-title"><i class="bi bi-clipboard-check"></i>Dinner plan</div>${esc(day.plan)}</div>` : ''}
+                ${day.callout ? `<div class="plan"><div class="plan-title"><i class="bi bi-lightbulb"></i>${esc(day.callout.title)}</div>${esc(day.callout.text)}</div>` : ''}
             </article>`;
         }
 
-        function renderWeek(data, anchor, trainingNote) {
+        function inWeek(list, week) { return (list || []).filter(x => week.includes(x.date)); }
+
+        function renderWeek(data, anchor) {
             const days = weekOf(anchor);
-            const workouts = Object.fromEntries(data.workouts.map(w => [w.date, w]));
-            const weighs = Object.fromEntries(data.weighIns.map(w => [w.date, w]));
+            const week = days.map(iso);
+            const byDate = list => Object.fromEntries((list || []).map(x => [x.date, x]));
+            const workouts = byDate(data.workouts), weighs = byDate(data.weighIns), steps = byDate(data.steps), cardio = byDate(data.cardio);
+            const W = data.targets.weekly;
             const cells = days.map(d => {
                 const k = iso(d);
-                const w = workouts[k], wt = weighs[k];
+                const w = workouts[k], wt = weighs[k], st = steps[k], c = cardio[k];
+                const past = d <= parseDate(anchor);
                 return `
-                <div class="wday${w ? ' trained' : ''}${k === anchor ? ' today' : ''}">
+                <div class="wday${w ? ' trained' : ''}${c ? ' cardio' : ''}${k === anchor ? ' today' : ''}">
                     <span class="dname">${d.toLocaleDateString('en-AU', { weekday: 'short' })}</span>
                     <span class="dnum">${d.getDate()}</span>
-                    ${w ? `<span class="tag"><i class="bi bi-lightning-fill"></i>${esc(w.focus)}</span>` : (d <= parseDate(anchor) ? '<span class="rest">Rest</span>' : '')}
+                    ${w ? `<span class="tag"><i class="bi bi-lightning-fill"></i>${esc(w.focus)}</span>` : ''}
+                    ${c ? `<span class="tag"><i class="bi bi-person-walking"></i>${c.minutes}<span class="u">&nbsp;min</span></span>` : ''}
+                    ${st ? `<span class="wt"><i class="bi bi-person-walking"></i><span>${(st.steps / 1000).toFixed(1)}k</span></span>` : ''}
+                    ${!w && !c && past ? '<span class="rest">Rest</span>' : ''}
                     ${wt ? `<span class="wt"><i class="bi bi-speedometer2"></i><span>${wt.kg}<span class="u"> kg</span></span></span>` : ''}
                 </div>`;
             }).join('');
+            const stepDays = inWeek(data.steps, week).filter(x => x.steps >= W.stepDays.steps).length;
+            const cardioN = inWeek(data.cardio, week).length;
+            const gymN = inWeek(data.workouts, week).length;
             const first = days[0], last = days[6];
             const range = `${first.getDate()} ${first.toLocaleDateString('en-AU', { month: 'short' })} – ${last.getDate()} ${last.toLocaleDateString('en-AU', { month: 'short' })}`;
             return `
@@ -456,18 +516,59 @@
                         <div class="card-kicker">Training</div>
                         <h2 class="card-title">Week of ${range}</h2>
                     </div>
-                    <span class="pill"><i class="bi bi-lightning-fill"></i>${data.workouts.filter(w => days.some(d => iso(d) === w.date)).length} sessions</span>
+                    <span class="pill"><i class="bi bi-lightning-fill"></i>${gymN} gym session${gymN === 1 ? '' : 's'}</span>
                 </div>
                 <div class="week">${cells}</div>
-                ${trainingNote ? `<div class="plan"><div class="plan-title"><i class="bi bi-arrow-repeat"></i>Next session</div>${esc(trainingNote)}</div>` : ''}
+                <div class="meters mt-0">
+                    ${meter({ name: `${fmt(W.stepDays.steps)}-step days`, icon: 'bi-person-walking', value: stepDays, lo: W.stepDays.lo, hi: W.stepDays.hi, unit: 'days', done: false, exact: true })}
+                    ${meter({ name: `Cardio (${W.cardio.minutes} min)`, icon: 'bi-heart-pulse', value: cardioN, lo: W.cardio.lo, unit: 'sessions', done: false, exact: true })}
+                </div>
+                ${data.trainingNote ? `<div class="plan"><div class="plan-title"><i class="bi bi-arrow-repeat"></i>Rest of the week</div>${esc(data.trainingNote)}</div>` : ''}
             </article>`;
         }
 
-        function renderKpis(data, day) {
+        function renderPlan(data) {
+            const T = data.targets, W = T.weekly;
+            const row = (icon, name, val, sub) => `<li><span class="t-name"><i class="bi ${icon}"></i>${name}</span><span class="t-val">${val}${sub ? `<small>${sub}</small>` : ''}</span></li>`;
+            return `
+            <article class="log-card reveal">
+                <div class="card-head">
+                    <div>
+                        <div class="card-kicker">Targets</div>
+                        <h2 class="card-title">The plan</h2>
+                    </div>
+                    <span class="pill"><i class="bi bi-person-check"></i>${esc(T.source)}</span>
+                </div>
+                <div class="plan-grid">
+                    <div>
+                        <p class="section-label"><i class="bi bi-sun"></i>Every day</p>
+                        <ul class="target-list">
+                            ${row('bi-fire', 'Energy', esc(T.kcal.label), `${approx(T.kcal.lo * 4.184, 100)}–${fmt(Math.round(T.kcal.hi * 4.184 / 100) * 100)} kJ`)}
+                            ${row('bi-egg-fried', 'Protein', `${T.protein.lo} g`)}
+                            ${row('bi-basket', 'Carbs', `${T.carbs.lo}–${T.carbs.hi} g`)}
+                            ${row('bi-droplet-half', 'Fat', `${T.fat.lo}–${T.fat.hi} g`)}
+                            ${row('bi-droplet-fill', 'Water', `${T.waterL.lo}+ L`)}
+                            ${row('bi-speedometer2', 'Weigh-in', 'Daily')}
+                        </ul>
+                    </div>
+                    <div>
+                        <p class="section-label"><i class="bi bi-calendar-week"></i>Every week</p>
+                        <ul class="target-list">
+                            ${row('bi-person-walking', `${fmt(W.stepDays.steps)} steps`, `${W.stepDays.lo}–${W.stepDays.hi} days`)}
+                            ${row('bi-heart-pulse', 'Incline walk or cardio', `${W.cardio.lo} × ${W.cardio.minutes} min`)}
+                        </ul>
+                    </div>
+                </div>
+                <ul class="notes mb-0">${T.approach.map(a => `<li>${esc(a)}</li>`).join('')}</ul>
+            </article>`;
+        }
+
+        function renderKpis(data, day, anchor) {
             const t = totals(day.items);
             const latestW = [...data.weighIns].sort((a, b) => b.date.localeCompare(a.date))[0];
-            const week = weekOf(day.date).map(iso);
-            const wk = data.workouts.filter(w => week.includes(w.date));
+            const wk = inWeek(data.workouts, weekOf(anchor).map(iso));
+            const dd = parseDate(day.date);
+            const dayLbl = `${dd.toLocaleDateString('en-AU', { weekday: 'short' })} ${dd.getDate()} ${dd.toLocaleDateString('en-AU', { month: 'short' })}`;
             return `
             <div class="kpi-row reveal">
                 <div class="kpi">
@@ -476,17 +577,17 @@
                     <div class="kpi-sub">Weighed ${shortDate(latestW.date)}</div>
                 </div>
                 <div class="kpi">
-                    <div class="kpi-label"><i class="bi bi-fire"></i>Energy so far</div>
-                    <div class="kpi-value">${approx(t.kcal, 50)}<small>kcal</small></div>
-                    <div class="kpi-sub">${approx(t.kj, 100)} kJ · ${day.status ? 'dinner to come' : 'full day'}</div>
+                    <div class="kpi-label"><i class="bi bi-fire"></i>Energy · ${dayLbl}${day.status ? ' so far' : ''}</div>
+                    <div class="kpi-value">~${fmt(nice(t.kcal))}<small>kcal</small></div>
+                    <div class="kpi-sub">${approx(t.kj, 100)} kJ · target ${esc(data.targets.kcal.label)}</div>
                 </div>
                 <div class="kpi">
-                    <div class="kpi-label"><i class="bi bi-egg-fried"></i>Protein so far</div>
+                    <div class="kpi-label"><i class="bi bi-egg-fried"></i>Protein · ${dayLbl}${day.status ? ' so far' : ''}</div>
                     <div class="kpi-value">~${fmt(t.protein)}<small>g</small></div>
-                    <div class="kpi-sub">Target ~${data.targets.proteinG} g a day</div>
+                    <div class="kpi-sub">Target ${data.targets.protein.lo} g</div>
                 </div>
                 <div class="kpi">
-                    <div class="kpi-label"><i class="bi bi-lightning-fill"></i>Sessions this week</div>
+                    <div class="kpi-label"><i class="bi bi-lightning-fill"></i>Gym sessions this week</div>
                     <div class="kpi-value">${wk.length}</div>
                     <div class="kpi-sub">${wk.map(w => `${esc(w.focus)} (${parseDate(w.date).toLocaleDateString('en-AU', { weekday: 'short' })})`).join(', ')}</div>
                 </div>
@@ -502,7 +603,8 @@
                 <div class="tt-row"><span>Energy</span><b>${fmt(+d.kcal)} kcal</b></div>
                 <div class="tt-row"><span>Kilojoules</span><b>${fmt(+d.kj)} kJ</b></div>
                 <div class="tt-row"><span>Share of day</span><b>${d.share}%</b></div>
-                <div class="tt-row"><span>Protein</span><b>${d.protein} g</b></div>`;
+                <div class="tt-row"><span>Protein</span><b>${d.protein} g</b></div>
+                <div class="tt-row"><span>Fat</span><b>${d.fat} g</b></div>`;
             const w = tip.offsetWidth || 180, h = tip.offsetHeight || 110;
             let left = x + 14, top = y - h - 10;
             if (left + w > window.innerWidth - 8) left = x - w - 14;
@@ -536,11 +638,15 @@
                 const data = await res.json();
                 const days = [...data.days].sort((a, b) => b.date.localeCompare(a.date));
                 const latest = days[0];
+                const allDates = [data.days, data.workouts, data.weighIns, data.steps, data.cardio]
+                    .flatMap(l => (l || []).map(x => x.date)).sort();
+                const anchor = allDates[allDates.length - 1];
                 el.innerHTML =
-                    renderKpis(data, latest) +
+                    renderKpis(data, latest, anchor) +
                     days.map(d => renderDay(d, data)).join('') +
-                    renderWeek(data, latest.date, latest.training) +
-                    `<p class="fine-print reveal">Rough maintenance at this weight: ${esc(data.targets.maintenanceKcal)} kcal a day (${esc(data.targets.maintenanceNote.toLowerCase())}). Entries live in <code>data/log.json</code>.</p>`;
+                    renderWeek(data, anchor) +
+                    renderPlan(data) +
+                    `<p class="fine-print reveal">Entries live in <code>data/log.json</code>.</p>`;
                 wireBars();
                 document.querySelectorAll('.reveal').forEach(n => observer.observe(n));
             } catch (err) {

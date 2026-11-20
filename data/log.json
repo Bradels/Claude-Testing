@@ -1,11 +1,42 @@
 {
   "targets": {
-    "proteinG": 150,
-    "proteinNote": "About 1.3 g per kg at 116 kg",
-    "sugarG": 50,
-    "sugarNote": "Common daily guideline for added sugar",
-    "maintenanceKcal": "2,500–3,000",
-    "maintenanceNote": "Rough estimate at 116 kg; depends on height, age, sex and activity"
+    "source": "Set by my personal trainer on 20 Nov 2026",
+    "kcal": {
+      "lo": 2700,
+      "hi": 2900,
+      "label": "2,800 ±100 kcal"
+    },
+    "protein": {
+      "lo": 180
+    },
+    "carbs": {
+      "lo": 300,
+      "hi": 340
+    },
+    "fat": {
+      "lo": 70,
+      "hi": 80
+    },
+    "waterL": {
+      "lo": 3
+    },
+    "weekly": {
+      "stepDays": {
+        "lo": 3,
+        "hi": 4,
+        "steps": 10000
+      },
+      "cardio": {
+        "lo": 2,
+        "minutes": "30–40",
+        "type": "Incline walk or cardio of choice"
+      }
+    },
+    "approach": [
+      "Weigh in daily. The plan gets adjusted based on how weight moves.",
+      "Starting on fairly high calories, so eat whole foods as much as possible, but still eat the foods you enjoy.",
+      "Nobody's perfect. What matters is how you react after an off-plan meal: one bad meal won't ruin progress, but one bad day will."
+    ]
   },
   "weighIns": [
     {
@@ -23,10 +54,12 @@
       "focus": "Legs"
     }
   ],
+  "steps": [],
+  "cardio": [],
+  "trainingNote": "Legs on Tuesday and Thursday, so make the next gym session upper body. Still to fit in this week: two 30–40 minute incline walks and 3–4 days of 10,000 steps.",
   "days": [
     {
       "date": "2026-11-19",
-      "status": "Dinner still to come",
       "items": [
         {
           "name": "Maltesers Bar (35 g)",
@@ -34,6 +67,8 @@
           "kj": 2406,
           "kcal": 575,
           "protein": 8,
+          "carbs": 65,
+          "fat": 29,
           "sugar": 50,
           "note": "802 kJ each, from the wrapper",
           "group": "Chocolate"
@@ -44,6 +79,8 @@
           "kj": 1080,
           "kcal": 260,
           "protein": 3,
+          "carbs": 27,
+          "fat": 14,
           "sugar": 27,
           "note": "Estimate",
           "group": "Chocolate"
@@ -54,6 +91,8 @@
           "kj": 3140,
           "kcal": 750,
           "protein": 40,
+          "carbs": 100,
+          "fat": 20,
           "sugar": 10,
           "note": "Estimate, ±150 kcal"
         },
@@ -63,6 +102,8 @@
           "kj": 1675,
           "kcal": 400,
           "protein": 8,
+          "carbs": 44,
+          "fat": 22,
           "sugar": 2,
           "note": "Estimate, ±150 kcal; size and oil vary"
         },
@@ -72,19 +113,57 @@
           "kj": 840,
           "kcal": 200,
           "protein": 4,
+          "carbs": 34,
+          "fat": 5,
           "sugar": 30,
           "note": "Estimate, with condensed milk"
+        },
+        {
+          "name": "Chicken nuggets (Maccas)",
+          "qty": 20,
+          "kj": 3600,
+          "kcal": 860,
+          "protein": 48,
+          "carbs": 52,
+          "fat": 50,
+          "sugar": 0,
+          "note": "Dinner. Estimate from published 20-piece figures"
+        },
+        {
+          "name": "Cappuccino (regular, full cream)",
+          "qty": 1,
+          "kj": 540,
+          "kcal": 130,
+          "protein": 7,
+          "carbs": 10,
+          "fat": 7,
+          "sugar": 10,
+          "note": "Dinner. Estimate"
+        },
+        {
+          "name": "Dipping sauces",
+          "qty": 3,
+          "kj": 630,
+          "kcal": 150,
+          "protein": 0,
+          "carbs": 36,
+          "fat": 1,
+          "sugar": 30,
+          "note": "Dinner. Assumed sweet sauces (sweet & sour, BBQ), ~50 kcal each"
         }
       ],
-      "range": "1,900–2,500 kcal",
+      "range": "2,850–3,650 kcal",
       "notes": [
-        "<strong>Chocolate:</strong> the seven bars come to about 835 kcal, roughly 38% of the day so far. They're also most of the ~120 g of sugar, more than double the usual ~50 g daily guideline.",
-        "<strong>Protein:</strong> about 63 g, mostly from the pho. At 116 kg, roughly 150 g a day (about 1.3 g per kg) is a sensible target for someone lifting twice a week, so today is about 40% of the way there with one meal left.",
-        "<strong>Energy:</strong> maintenance at 116 kg is probably somewhere around 2,500–3,000 kcal a day, depending on height, age and activity. At ~2,200 kcal so far, dinner decides whether today lands under or at maintenance.",
-        "<strong>Accuracy:</strong> the pho and doughnuts are the big unknowns (±150 kcal each). A realistic range for the day so far is 1,900–2,500 kcal."
+        "<strong>Final tally:</strong> about 3,325 kcal (~13,900 kJ), roughly 525 above the 2,800 target my PT set the next day (425 above the top of its ±100 range).",
+        "<strong>Fat was the big miss:</strong> about 148 g against 70–80 g. The nuggets (~50 g), chocolate (~43 g) and doughnuts (~22 g) make up most of it.",
+        "<strong>Protein:</strong> about 118 g, two-thirds of the 180 g target. Carbs landed a little over at ~370 g.",
+        "<strong>Chocolate:</strong> ~835 kcal, about 25% of the day, and ~77 g of the ~159 g of sugar.",
+        "<strong>Accuracy:</strong> the pho and doughnuts are ±150 kcal each, and the three dipping sauces are assumed to be sweet ones at ~50 kcal each."
       ],
-      "plan": "Make dinner protein-first and low in sugar: about 200 g of cooked chicken breast, lean steak or fish (~60 g protein) with rice and veg. That's around 600 kcal and ends the day near 2,800 kcal and ~130 g of protein. If the goal is weight loss, go lighter on the rice and keep dinner closer to 400 kcal.",
-      "training": "Legs twice this week with a rest day in between is good frequency. Make the next session upper body so your legs get 48–72 hours to recover."
+      "callout": {
+        "title": "Takeaway",
+        "text": "Swapping just the chocolate for two protein yoghurts would have saved ~500 kcal and ~40 g of fat and added ~25 g of protein, landing the day right around 2,800."
+      }
     }
   ]
 }
